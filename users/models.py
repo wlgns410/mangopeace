@@ -3,7 +3,7 @@ from django.db.models.deletion       import CASCADE
 from django.db.models.fields         import CharField, DateTimeField, DecimalField, TextField, URLField
 from django.db.models.fields.related import ForeignKey, ManyToManyField
 
-from restaurants.models              import Restaurant, Review
+from restaurants.models              import Restaurant
 
 class User(Model):
     full_name           = CharField(max_length=45)
@@ -12,7 +12,7 @@ class User(Model):
     phone_number        = CharField(max_length=20, unique=True, null=True)
     profile_url         = URLField(null=True)
     wishlist_restaurant = ManyToManyField(Restaurant, through="Wishlist", related_name="wishlist_user")
-    reviewed_restaurant = ManyToManyField(Restaurant, through=Review, related_name="reviewed_user")
+    reviewed_restaurant = ManyToManyField(Restaurant, through="Review", related_name="reviewed_user")
     created_at          = DateTimeField(auto_now_add=True)
     updated_at          = DateTimeField(auto_now=True)
 

@@ -1,10 +1,10 @@
-from users.validation import validate_email, validate_full_name, validate_password, validate_phone_number
 from django.db.models.deletion       import CASCADE
-from django.db.models.fields         import CharField, DateTimeField, DecimalField, IntegerField, TextField, URLField
+from django.db.models.fields         import CharField, IntegerField, TextField, URLField
 from django.db.models.fields.related import ForeignKey, ManyToManyField
 
 from restaurants.models              import Restaurant
 from mangoPeace.common               import TimeStampModel
+from users.validation                import validate_email, validate_nickname, validate_password, validate_phone_number
 
 class User(TimeStampModel):
     nick_name            = CharField(max_length=15, unique=True)
@@ -20,7 +20,7 @@ class User(TimeStampModel):
         if not validate_email(data["email"]):
             return False
         
-        if not validate_full_name(data["full_name"]):
+        if not validate_nickname(data["nickname"]):
             return False
         
         if not validate_password(data["password"]):
@@ -35,18 +35,18 @@ class User(TimeStampModel):
         db_table = "users"
 
 class Wishlist(TimeStampModel):
-    user                = ForeignKey(User, on_delete=CASCADE)
-    restaurant          = ForeignKey(Restaurant, on_delete=CASCADE)
+    user       = ForeignKey(User, on_delete=CASCADE)
+    restaurant = ForeignKey(Restaurant, on_delete=CASCADE)
 
     class Meta():
         db_table        = "wishlists"
         unique_together = ['user', 'restaurant']
 
 class Review(TimeStampModel):
-    user                = ForeignKey(User, on_delete=CASCADE)
-    restaurant          = ForeignKey(Restaurant, on_delete=CASCADE)
-    content             = TextField()
-    rating              = IntegerField(max_length=1)
+    user       = ForeignKey(User, on_delete=CASCADE)
+    restaurant = ForeignKey(Restaurant, on_delete=CASCADE)
+    content    = TextField()
+    rating     = IntegerField(max_length=1)
 
     class Meta():
         db_table = "reviews"

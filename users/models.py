@@ -7,7 +7,7 @@ from mangoPeace.common               import TimeStampModel
 from users.validation                import validate_email, validate_nickname, validate_password, validate_phone_number
 
 class User(TimeStampModel):
-    nick_name            = CharField(max_length=15, unique=True)
+    nickname            = CharField(max_length=15, unique=True)
     email                = CharField(max_length=200, unique=True)
     password             = CharField(max_length=200)
     phone_number         = CharField(max_length=20, unique=True, null=True)

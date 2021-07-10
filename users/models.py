@@ -52,7 +52,7 @@ class Review(TimeStampModel):
     user       = ForeignKey(User, on_delete=CASCADE)
     restaurant = ForeignKey(Restaurant, on_delete=CASCADE)
     content    = TextField()
-    rating     = IntegerField(max_length=1)
+    rating     = IntegerField()
 
     class Meta():
         db_table = "reviews"

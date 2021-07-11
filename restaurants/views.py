@@ -1,6 +1,6 @@
 from django.http        import JsonResponse
 from django.views       import View
-from restaurants.models import Image, Restaurant
+from restaurants.models import Restaurant
 
 class RestaurantFoodView(View):
     def get(self, request, restaurant_id):
@@ -10,20 +10,12 @@ class RestaurantFoodView(View):
             prices         = []
 
             for food_instance in foods_queryset:
-                prices.append(food_instance.price)
-                images_queryset = Image.objects.filter(food=food_instance)
-                images          = []
-
-                for image_instance in images_queryset:
-                    images.append(image_instance.image_url)
-  
                 food = {
                     "id":food_instance.id,
                     "name":food_instance.name,
-                    "price":food_instance.price,
-                    "images":images,
                 }
                 foods.append(food)
+                prices.append(food_instance.price)
 
             average_price = sum(prices) / len(prices)
             result        = {

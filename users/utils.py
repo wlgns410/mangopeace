@@ -14,14 +14,14 @@ class ConfirmUser:
     
     def __call__(self, request, *args, **kwargs):
         try:
-            token   = request.headers.get("Authorization")
+            token         = request.headers.get("Authorization")
             decoded_token = jwt.decode(jwt=token, key=my_settings.SECRET_KEY,  algorithms=my_settings.ALGORITHM)
 
             if not decoded_token :
                 raise ValidationError(message="NO_TOKEN")
             
             user_instance = User.objects.get(id=decoded_token["id"])
-            request.user = user_instance
+            request.user  = user_instance
             
             return self.func(self, request, *args, **kwargs)
         

@@ -2,10 +2,10 @@ import jwt
 
 from django.http.response import JsonResponse
 
-from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError, DecodeError
+from jwt.exceptions       import ExpiredSignatureError, InvalidSignatureError, DecodeError
 
 import my_settings
-from users.models import User
+from users.models         import User
 
 class ConfirmUser:
     def __init__(self, func):

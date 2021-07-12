@@ -23,7 +23,7 @@ class RestaurantDetailView(View):
             }
 
             result = {
-            "id"             :restaurant.id,
+            "id"             : restaurant.id,
             "sub_category"   : restaurant.sub_category.name,
             "name"           : restaurant.name,
             "address"        : restaurant.address,

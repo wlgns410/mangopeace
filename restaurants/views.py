@@ -7,21 +7,21 @@ from restaurants.models import Restaurant
 class RestaurantDetailView(View):
     def get(self, request, restaurant_id):
         try:
-            restaurant_instance = Restaurant.objects.get(id=restaurant_id)
-            fake_user_instance  = User.objects.get(id=1)
-            is_wished           = fake_user_instance.wishlist_restaurants.filter(id=restaurant_id).exists()
-            reviews_queryset    = Restaurant.objects.get(id=restaurant_id).review_set.all()
-            average_rating      = reviews_queryset.aggregate(Avg("rating"))["rating__avg"]
-            review_count        = Restaurant.objects.get(id=restaurant_id).review_set.all().count()
-            result              = {
-            "id":restaurant_instance.id,
-            "sub_category": restaurant_instance.sub_category.name,
-            "name": restaurant_instance.name,
-            "address": restaurant_instance.address,
-            "phone_number": restaurant_instance.phone_number,
-            "coordinate": restaurant_instance.coordinate,
-            "open_time": restaurant_instance.open_time,
-            "updated_at": restaurant_instance.updated_at,
+            restaurant     = Restaurant.objects.get(id=restaurant_id)
+            user           = request.user
+            is_wished      = user.wishlist_restaurants.filter(id=restaurant_id).exists() if request.user
+            reviews        = Restaurant.objects.get(id=restaurant_id).review_set.all()
+            average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
+            review_count   = Restaurant.objects.get(id=restaurant_id).review_set.all().count()
+            result         = {
+            "id":restaurant.id,
+            "sub_category": restaurant.sub_category.name,
+            "name": restaurant.name,
+            "address": restaurant.address,
+            "phone_number": restaurant.phone_number,
+            "coordinate": restaurant.coordinate,
+            "open_time": restaurant.open_time,
+            "updated_at": restaurant.updated_at,
             "is_wished" : is_wished,
             "review_count" : review_count,
             "average_rating" : average_rating,

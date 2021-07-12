@@ -1,6 +1,5 @@
 import jwt
 
-from django.core.exceptions import ValidationError
 from django.http.response import JsonResponse
 
 from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError, DecodeError
@@ -14,14 +13,14 @@ class ConfirmUser:
     
     def __call__(self, request, *args, **kwargs):
         try:
-            token         = request.headers.get("Authorization")
-            decoded_token = jwt.decode(jwt=token, key=my_settings.SECRET_KEY,  algorithms=my_settings.ALGORITHM)
-
-            if not decoded_token :
-                raise ValidationError(message="NO_TOKEN")
+            access_token = request.headers.get("Authorization")
             
-            user_instance = User.objects.get(id=decoded_token["id"])
-            request.user  = user_instance
+            if not access_token:
+                return JsonResponse({"message" : "ACCESS_TOKEN_REQUIRED"})
+            
+            payload      = jwt.decode(jwt=access_token, key=my_settings.SECRET_KEY,  algorithms=my_settings.ALGORITHM)
+            user         = User.objects.get(id=payload["id"])
+            request.user = user
             
             return self.func(self, request, *args, **kwargs)
         
@@ -35,4 +34,4 @@ class ConfirmUser:
             return JsonResponse({"message":"DECODE_ERROR"}, status=400)
         
         except User.DoesNotExist:
-            return JsonResponse({"message":"USER_NOT_EXIST"}, status=400)
+            return JsonResponse({"message":"USER_NOT_EXIST"}, status=404)

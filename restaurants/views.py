@@ -12,17 +12,10 @@ class RestaurantFoodView(View):
             foods_list    = []
 
             for f in foods:
-                images = Image.objects.filter(food=f)
-                images_list = []
-
-                for image in images:
-                    images_list.append(image.image_url)
-
                 food = {
                     "id":f.id,
                     "name":f.name,
                     "price":f.price,
-                    "images":images_list,
                 }
                 foods_list.append(food)
 

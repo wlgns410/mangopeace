@@ -33,7 +33,30 @@ class SignInView(View):
             return JsonResponse({"message":"success", "access_token":access_token}, status=200)
         
         except User.DoesNotExist:
-            return JsonResponse({"message":"USER_NOT_EXIST"}, status=400)        
+            return JsonResponse({"message":"USER_NOT_EXIST"}, status=404)        
+
+class SignupView(View):
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+
+            if not User.validate(data):
+                return JsonResponse({"message":"VALIDATION_ERROR"}, status=401)        
+
+            nickname        = data["nickname"]
+            email           = data["email"]
+            password        = data["password"]
+            phone_number    = data["phone_number"]
+            hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
+
+            User.objects.create(
+            nickname     = nickname,
+            email        = email,
+            password     = hashed_password.decode(),
+            phone_number = phone_number,
+            )
+
+            return JsonResponse({"message":"success"}, status=201)
 
         except JSONDecodeError:
             return JsonResponse({"message":"JSON_DECODE_ERROR"}, status=400)        

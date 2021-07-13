@@ -2,27 +2,14 @@ from django.http                 import JsonResponse
 from django.views                import View
 from django.db.models.aggregates import Avg
 
-from restaurants.models          import Image, Restaurant
+from restaurants.models          import Food, Restaurant
 
-class RestaurantFoodView(View):
+class RestaurantFoodsView(View):
     def get(self, request, restaurant_id):
         try:
-            foods         = Restaurant.objects.get(id=restaurant_id).foods.all()
-            average_price = foods.aggregate(Avg("price"))["price__avg"]
-            foods_list    = []
-
-            for f in foods:
-                food = {
-                    "id":f.id,
-                    "name":f.name,
-                    "price":f.price,
-                }
-                foods_list.append(food)
-
-            result = {
-                "foods"         : foods_list,
-                "average_price" : average_price
-            }
+            foods      = Food.objects.filter(restaurant_id=restaurant_id)
+            foods_list = [{"id":f.id, "name":f.name, "price":f.price} for f in foods]
+            result     = {"foods" : foods_list}
             
             return JsonResponse({"message":"success", "result":result}, status=200)
 

@@ -1,9 +1,36 @@
-from django.http        import JsonResponse
-from django.views       import View
-from django.db.models   import Avg
+from django.http import JsonResponse
+from django.views import View
+from django.db.models import Avg
 
 from restaurants.models import Restaurant, Food
 from users.utils        import ConfirmUser
+
+class PopularRestaurantView(View):
+    def get(self, request):
+        try:
+            dict_sort={
+                "average_rating" : "-filtering"
+            }
+            filtering = request.GET.get("filtering", None)
+            restaurants = Restaurant.objects.annotate(filtering=Avg("review__rating")).order_by(dict_sort[filtering])
+            
+            restaurant_list = []
+            
+            for restaurant in restaurants: 
+                restaurant_list.append({
+                    "sub_category"      : restaurant.sub_category.name,
+                    "category"          : restaurant.sub_category.category.name,
+                    "restaurant_name"   : restaurant.name,
+                    "address"           : restaurant.address,
+                    "rating"            : round(restaurant.filtering, 1),
+                    "image"             : restaurant.foods.all()[0].images.all()[0].image_url,
+                    "restaurant_id"     : restaurant.id
+                })
+
+            return JsonResponse({"message":"success", "result":restaurant_list[:5]}, status=200)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
 
 class RestaurantDetailView(View):
     @ConfirmUser

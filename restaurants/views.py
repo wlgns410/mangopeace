@@ -1,8 +1,9 @@
-from users.utils import ConfirmUser
 from django.http        import JsonResponse
 from django.views       import View
+from django.db.models   import Avg
 
-from restaurants.models import Food, Restaurant
+from restaurants.models import Restaurant, Food
+from users.utils        import ConfirmUser
 
 class RestaurantDetailView(View):
     @ConfirmUser

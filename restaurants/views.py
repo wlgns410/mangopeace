@@ -51,7 +51,6 @@ class TopListView(View):
             }
             ordering = request.GET.get("ordering", None)
             
-
             sub_categorys = SubCategory.objects.all()          
             sub_category_list = []
             for sub_category in sub_categorys:

@@ -1,10 +1,15 @@
-from django.http import JsonResponse
-from django.views import View
-from django.db.models import Avg
+import json
+
+from django.http        import JsonResponse
+from django.views       import View
+from django.db.utils    import DataError
+from django.db.models   import Avg
+from django.utils       import timezone
 
 from restaurants.models import Restaurant
 from restaurants.models import Restaurant
 from users.utils        import ConfirmUser
+from users.models       import Review
 
 class PopularRestaurantView(View):
     def get(self, request):
@@ -69,3 +74,26 @@ class RestaurantDetailView(View):
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)        
+
+class ReviewView(View):
+    @ConfirmUser
+    def patch(self, request, restaurant_id, review_id):
+        try:
+            data    = json.loads(request.body)
+            content = data["content"]
+            rating  = data["rating"]
+
+            if Review.objects.filter(id=review_id).exists():
+                reviews = Review.objects.filter(id=review_id)
+            else:
+                return JsonResponse({"message":"REVIEW_NOT_EXISTS"}, status=404)
+            
+            reviews.update(content=content, rating=rating, updated_at=timezone.now())
+
+            return JsonResponse({"message":"success"}, status=200)
+            
+        except KeyError:
+            return JsonResponse({"message":"KEY_ERROR"}, status=400)
+
+        except DataError:
+            return JsonResponse({"message":"DATA_ERROR"}, status=400)

@@ -1,8 +1,7 @@
-from django.http                 import JsonResponse
-from django.views                import View
-from django.db.models.aggregates import Avg
+from django.http        import JsonResponse
+from django.views       import View
 
-from restaurants.models          import Food, Image, Restaurant
+from restaurants.models import Food, Restaurant
 
 class RestaurantFoodsView(View):
     def get(self, request, restaurant_id):

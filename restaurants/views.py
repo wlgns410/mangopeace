@@ -9,7 +9,11 @@ from users.utils        import ConfirmUser
 class PopularRestaurantView(View):
     def get(self, request):
         try:
-            restaurants = Restaurant.objects.annotate(average_rating=Avg("review__rating")).order_by("-average_rating")
+            dict_sort={
+                "average_rating" : "-filtering"
+            }
+            filtering = request.GET.get("filtering", None)
+            restaurants = Restaurant.objects.annotate(filtering=Avg("review__rating")).order_by(dict_sort[filtering])
             
             restaurant_list = []
             
@@ -19,7 +23,7 @@ class PopularRestaurantView(View):
                     "category"          : restaurant.sub_category.category.name,
                     "restaurant_name"   : restaurant.name,
                     "address"           : restaurant.address,
-                    "rating"            : round(restaurant.average_rating, 1),
+                    "rating"            : round(restaurant.filtering, 1),
                     "image"             : restaurant.foods.all()[0].images.all()[0].image_url,
                     "restaurant_id"     : restaurant.id
                 })

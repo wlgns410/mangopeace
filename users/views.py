@@ -31,9 +31,15 @@ class SignInView(View):
             )
 
             return JsonResponse({"message":"success", "access_token":access_token}, status=200)
+
+        except KeyError:
+            return JsonResponse({"message":"KEY_ERROR"}, status=400)   
         
         except User.DoesNotExist:
-            return JsonResponse({"message":"USER_NOT_EXIST"}, status=404)        
+            return JsonResponse({"message":"USER_NOT_EXIST"}, status=404)       
+
+        except DataError:
+            return JsonResponse({"message": "DATA_ERROR"}, status=400) 
 
 class SignupView(View):
     def post(self, request):

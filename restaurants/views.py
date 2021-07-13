@@ -8,6 +8,8 @@ class WishListView(View):
     @ConfirmUser
     def post(self, request, restaurant_id):
         try:
+            print(request.user)
+            print(request.user.id)
             restaurant = Restaurant.objects.get(id=restaurant_id)
 
             if request.user.wishlist_restaurants.filter(id=restaurant_id).exists():

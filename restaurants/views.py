@@ -1,10 +1,13 @@
-from django.http import JsonResponse
-from django.views import View
-from django.db.models import Avg
+import json
+
+from django.http        import JsonResponse
+from django.views       import View
+from django.db.models   import Avg
+from django.db.utils    import DataError
 
 from restaurants.models import Restaurant
-from restaurants.models import Restaurant
 from users.utils        import ConfirmUser
+from users.models       import Review, User
 
 class PopularRestaurantView(View):
     def get(self, request):
@@ -69,3 +72,30 @@ class RestaurantDetailView(View):
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)        
+
+class RestaurantReviewView(View):
+    @ConfirmUser
+    def post(self, request, restaurant_id):
+        try:
+            data       = json.loads(request.body)
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+            content    = data["content"]
+            rating     = data["rating"]
+
+            Review.objects.create(
+                user       = request.user,
+                restaurant = restaurant,
+                content    = content,
+                rating     = rating
+            )
+
+            return JsonResponse({"message":"success"}, status=201)
+
+        except KeyError:
+            return JsonResponse({"message":"KEY_ERROR"}, status=400)
+        
+        except DataError:
+            return JsonResponse({"message":"DATA_ERROR"}, status=400)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)     

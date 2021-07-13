@@ -3,6 +3,7 @@ from django.views       import View
 from django.db.models   import Avg
 
 from restaurants.models import Restaurant
+from users.utils        import ConfirmUser
 
 class RestaurantDetailView(View):
     @ConfirmUser

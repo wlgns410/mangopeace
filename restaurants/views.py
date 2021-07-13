@@ -1,9 +1,10 @@
-from django.http import JsonResponse
-from django.views import View
-from django.db.models import Avg
+from django.http        import JsonResponse
+from django.views       import View
+from django.db.models   import Avg
+from django.db.utils    import DataError
 
 from restaurants.models import Restaurant
-from restaurants.models import Restaurant
+from users.models       import Review
 from users.utils        import ConfirmUser
 
 class PopularRestaurantView(View):
@@ -69,3 +70,18 @@ class RestaurantDetailView(View):
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)        
+
+class ReviewView(View):
+    @ConfirmUser
+    def delete(self, request, restaurant_id, review_id):
+        try:
+            review = Review.objects.get(id=review_id)
+            review.delete()
+
+            return JsonResponse({"message":"success"}, status=200)
+
+        except DataError:
+            return JsonResponse({"message":"DATA_ERROR"}, status=400)
+
+        except Review.DoesNotExist:
+            return JsonResponse({"message":"REVIEW_NOT_EXISTS"}, status=404)

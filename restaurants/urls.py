@@ -1,8 +1,5 @@
 from django.urls import path
 
-<<<<<<< HEAD
-from restaurants.views import PopularRestaurantView, RestaurantDetailView, WishListView, ReviewView
-=======
 from restaurants.views import (
     PopularRestaurantView,
     RestaurantDetailView,
@@ -12,7 +9,6 @@ from restaurants.views import (
     RestaurantReviewView,
     ReviewView
 )
->>>>>>> main
 
 urlpatterns = [
     path("", PopularRestaurantView.as_view()),
@@ -21,8 +17,5 @@ urlpatterns = [
     path("/banner-list", SubCategoryListView.as_view()),
     path("/<int:restaurant_id>/wishlist", WishListView.as_view()),
     path("/<int:restaurant_id>/review/<int:review_id>", ReviewView.as_view()),  
-<<<<<<< HEAD
-=======
     path("/<int:restaurant_id>/reviews", RestaurantReviewView.as_view()),
->>>>>>> main
 ]

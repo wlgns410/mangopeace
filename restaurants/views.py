@@ -2,8 +2,9 @@ import json
 
 from django.http        import JsonResponse
 from django.views       import View
-from django.db.models   import Avg
 from django.db.utils    import DataError
+from django.db.models   import Avg
+from django.utils       import timezone
 
 from restaurants.models import Restaurant, Food, SubCategory
 from users.utils        import ConfirmUser
@@ -170,6 +171,24 @@ class WishListView(View):
 
 class ReviewView(View):
     @ConfirmUser
+    def patch(self, request, restaurant_id, review_id):
+        try:
+            data    = json.loads(request.body)
+            content = data["content"]
+            rating  = data["rating"]
+
+            if not Review.objects.filter(id=review_id, user_id=request.user.id).exists():
+                return JsonResponse({"message":"REVIEW_NOT_EXISTS"}, status=404)
+
+            Review.objects.filter(id=review_id, user_id=request.user.id).update(content=content, rating=rating, updated_at=timezone.now())
+            
+            return JsonResponse({"message":"success"}, status=204)
+            
+        except KeyError:
+            return JsonResponse({"message":"KEY_ERROR"}, status=400)
+
+        except DataError:
+            return JsonResponse({"message":"DATA_ERROR"}, status=400)
     def delete(self, request, restaurant_id, review_id):
         try:
             review = Review.objects.get(id=review_id, user_id=request.user.id)

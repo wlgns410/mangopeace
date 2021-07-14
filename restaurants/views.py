@@ -2,8 +2,8 @@ from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Avg
 
+from restaurants.models import Restaurant, Food, SubCategory
 from users.utils        import ConfirmUser
-from restaurants.models import Restaurant, SubCategory
 
 class PopularRestaurantView(View):
     def get(self, request):
@@ -69,6 +69,22 @@ class RestaurantDetailView(View):
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)        
 
+class RestaurantFoodsView(View):
+    def get(self, request, restaurant_id):
+        try:
+            foods      = Food.objects.filter(restaurant_id=restaurant_id)
+            foods_list = [{
+                "id"     : food.id, 
+                "name"   : food.name, 
+                "price"  : food.price, 
+                "images" : [image.image_url for image in food.images.all()]
+            } for food in foods]
+
+            return JsonResponse({"message":"success", "result":foods_list}, status=200)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)
+            
 class WishListView(View):
     @ConfirmUser
     def post(self, request, restaurant_id):

@@ -3,8 +3,9 @@ from django.views       import View
 from django.db.models   import Avg
 
 from restaurants.models import Restaurant
-from users.models       import Review
+from restaurants.models import Restaurant, Food, SubCategory
 from users.utils        import ConfirmUser
+from users.models       import Review
 
 class PopularRestaurantView(View):
     def get(self, request):
@@ -92,6 +93,22 @@ class RestaurantReviewView(View):
 
         return JsonResponse({"message":"success", "result":review_list}, status=200)
 
+class RestaurantFoodsView(View):
+    def get(self, request, restaurant_id):
+        try:
+            foods      = Food.objects.filter(restaurant_id=restaurant_id)
+            foods_list = [{
+                "id"     : food.id, 
+                "name"   : food.name, 
+                "price"  : food.price, 
+                "images" : [image.image_url for image in food.images.all()]
+            } for food in foods]
+
+            return JsonResponse({"message":"success", "result":foods_list}, status=200)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)
+            
 class WishListView(View):
     @ConfirmUser
     def post(self, request, restaurant_id):
@@ -122,3 +139,20 @@ class WishListView(View):
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)
+
+class SubCategoryListView(View):
+    def get(self, request):
+        try:
+            subcategorys = SubCategory.objects.all()
+                    
+            subcategory_list = []
+            for subcategory in subcategorys:                            
+                subcategory_list.append({
+                    "sub_category" : subcategory.id,
+                    "image" : subcategory.restaurants.first().foods.first().images.first().image_url
+                })
+
+            return JsonResponse({"message":"success", "result":subcategory_list}, status=200)
+
+        except SubCategory.DoesNotExist:
+            return JsonResponse({"message":"sub_category_NOT_EXIST"}, status=404)

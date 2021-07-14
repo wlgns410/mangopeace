@@ -2,8 +2,10 @@ from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Avg
 
+from restaurants.models import Restaurant
 from restaurants.models import Restaurant, Food, SubCategory
 from users.utils        import ConfirmUser
+from users.models       import Review
 
 class PopularRestaurantView(View):
     def get(self, request):
@@ -39,9 +41,9 @@ class RestaurantDetailView(View):
             restaurant = Restaurant.objects.get(id=restaurant_id)
             is_wished  = request.user.wishlist_restaurants.filter(id=restaurant_id).exists() if request.user else False
 
-            reviews                   = restaurant.review_set.all()
-            average_rating            = reviews.aggregate(Avg("rating"))["rating__avg"]
-            review_count              = {
+            reviews        = restaurant.review_set.all()
+            average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
+            review_count   = {
                 "total"        : reviews.count(),
                 "rating_one"   : reviews.filter(rating=1).count(),
                 "rating_two"   : reviews.filter(rating=2).count(),
@@ -68,6 +70,28 @@ class RestaurantDetailView(View):
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)        
+
+class RestaurantReviewView(View):
+    def get(self, request, restaurant_id):
+        offset        = int(request.GET.get("offset", 0))
+        limit         = int(request.GET.get("limit", 10))
+        rating_min    = request.GET.get("rating-min", 1)
+        rating_max    = request.GET.get("rating-max", 5)
+        reviews       = Review.objects.filter(restaurant_id=restaurant_id, rating__gte = rating_min, rating__lte = rating_max).order_by("-created_at")[offset : offset + limit]
+        review_list   = [{
+            "user":{
+                "id"            : review.user.id,
+                "nickname"      : review.user.nickname,
+                "profile_image" : review.user.profile_url,
+                "review_count"  : review.user.reviewed_restaurants.count()
+                },
+                "id"         : review.id,
+                "content"    : review.content,
+                "rating"     : review.rating,
+                "created_at" : review.created_at,
+            } for review in reviews]
+
+        return JsonResponse({"message":"success", "result":review_list}, status=200)
 
 class RestaurantFoodsView(View):
     def get(self, request, restaurant_id):

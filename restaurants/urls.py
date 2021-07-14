@@ -4,7 +4,9 @@ from restaurants.views import (
     PopularRestaurantView,
     RestaurantDetailView,
     WishListView,
-    SubCategoryListView
+    SubCategoryListView,
+    RestaurantFoodsView,
+    RestaurantReviewView
 )
 
 urlpatterns = [
@@ -13,4 +15,6 @@ urlpatterns = [
     path("", PopularRestaurantView.as_view()),
     path("/<int:restaurant_id>/wishlist", WishListView.as_view()),
     path("/banner-list", SubCategoryListView.as_view()),
+    path("/<int:restaurant_id>/reviews", RestaurantReviewView.as_view()),
+
 ]

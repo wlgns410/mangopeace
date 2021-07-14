@@ -80,15 +80,15 @@ class RestaurantReviewView(View):
         reviews       = Review.objects.filter(restaurant_id=restaurant_id, rating__gte = rating_min, rating__lte = rating_max).order_by("-created_at")[offset : offset + limit]
         review_list   = [{
             "user":{
-                "id"            :review.user.id,
-                "nickname"      :review.user.nickname,
-                "profile_image" :review.user.profile_url,
-                "review_count"  :review.user.reviewed_restaurants.count()
+                "id"            : review.user.id,
+                "nickname"      : review.user.nickname,
+                "profile_image" : review.user.profile_url,
+                "review_count"  : review.user.reviewed_restaurants.count()
                 },
-                "id"         :review.id,
+                "id"         : review.id,
                 "content"    : review.content,
-                "rating"     :review.rating,
-                "created_at" :review.created_at,
+                "rating"     : review.rating,
+                "created_at" : review.created_at,
             } for review in reviews]
 
         return JsonResponse({"message":"success", "result":review_list}, status=200)

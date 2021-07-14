@@ -3,9 +3,9 @@ from django.views       import View
 from django.db.models   import Avg
 from django.db.utils    import DataError
 
+from users.utils        import ConfirmUser
 from restaurants.models import Restaurant
 from users.models       import Review
-from users.utils        import ConfirmUser
 
 class PopularRestaurantView(View):
     def get(self, request):
@@ -71,14 +71,45 @@ class RestaurantDetailView(View):
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)        
 
+class WishListView(View):
+    @ConfirmUser
+    def post(self, request, restaurant_id):
+        try:
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+
+            if request.user.wishlist_restaurants.filter(id=restaurant_id).exists():
+                return JsonResponse({"message":"WISHLIST_ALREADY_EXISTS"}, status=400)
+
+            request.user.wishlist_restaurants.add(restaurant)
+            
+            return JsonResponse({"message":"success"}, status=201)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)   
+        
+    @ConfirmUser
+    def delete(self, request, restaurant_id):
+        try:
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+
+            if not request.user.wishlist_restaurants.filter(id=restaurant_id).exists():
+                return JsonResponse({"message":"WISHLIST_NOT_EXISTS"}, status=404)
+           
+            request.user.wishlist_restaurants.remove(restaurant)
+
+            return JsonResponse({"message":"success"}, status=204)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)
+
 class ReviewView(View):
     @ConfirmUser
     def delete(self, request, restaurant_id, review_id):
         try:
-            review = Review.objects.get(id=review_id)
+            review = Review.objects.get(id=review_id, user_id=request.user.id)
             review.delete()
 
-            return JsonResponse({"message":"success"}, status=200)
+            return JsonResponse({"message":"success"}, status=204)
 
         except DataError:
             return JsonResponse({"message":"DATA_ERROR"}, status=400)

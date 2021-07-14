@@ -1,7 +1,7 @@
 from django.urls       import path
 
-from restaurants.views import RestaurantDetailView
+from restaurants.views import SubCategoryListView
 
 urlpatterns = [
-    path("/<int:restaurant_id>", RestaurantDetailView.as_view()),
+     path("/banner-list", SubCategoryListView.as_view()),
 ]

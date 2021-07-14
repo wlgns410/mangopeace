@@ -2,9 +2,35 @@ from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Avg
 
-from restaurants.models import SubCategory
-from restaurants.models import Restaurant
 from users.utils        import ConfirmUser
+from restaurants.models import Restaurant, SubCategory
+
+class PopularRestaurantView(View):
+    def get(self, request):
+        try:
+            dict_sort={
+                "average_rating" : "-filtering"
+            }
+            filtering = request.GET.get("filtering", None)
+            restaurants = Restaurant.objects.annotate(filtering=Avg("review__rating")).order_by(dict_sort[filtering])
+            
+            restaurant_list = []
+            
+            for restaurant in restaurants: 
+                restaurant_list.append({
+                    "sub_category"      : restaurant.sub_category.name,
+                    "category"          : restaurant.sub_category.category.name,
+                    "restaurant_name"   : restaurant.name,
+                    "address"           : restaurant.address,
+                    "rating"            : round(restaurant.filtering, 1),
+                    "image"             : restaurant.foods.all()[0].images.all()[0].image_url,
+                    "restaurant_id"     : restaurant.id
+                })
+
+            return JsonResponse({"message":"success", "result":restaurant_list[:5]}, status=200)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
 
 class RestaurantDetailView(View):
     @ConfirmUser
@@ -43,18 +69,48 @@ class RestaurantDetailView(View):
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
 
+class WishListView(View):
+    @ConfirmUser
+    def post(self, request, restaurant_id):
+        try:
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+
+            if request.user.wishlist_restaurants.filter(id=restaurant_id).exists():
+                return JsonResponse({"message":"WISHLIST_ALREADY_EXISTS"}, status=400)
+
+            request.user.wishlist_restaurants.add(restaurant)
+            
+            return JsonResponse({"message":"success"}, status=201)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)   
+        
+    @ConfirmUser
+    def delete(self, request, restaurant_id):
+        try:
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+
+            if not request.user.wishlist_restaurants.filter(id=restaurant_id).exists():
+                return JsonResponse({"message":"WISHLIST_NOT_EXISTS"}, status=404)
+           
+            request.user.wishlist_restaurants.remove(restaurant)
+
+            return JsonResponse({"message":"success"}, status=204)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)
+
 class TopListView(View):
     def get(self, request):
         try:
             dic_sort={ 
-                "average_rating" : "-ordering"
+                "ordering" : "-filtering"
             }
-            ordering = request.GET.get("ordering", None)
-            
+            filtering = request.GET.get("filtering", None)
             sub_categorys = SubCategory.objects.all()          
             sub_category_list = []
             for sub_category in sub_categorys:
-                restaurants = sub_category.restaurants.annotate(ordering=Avg("review__rating")).order_by(dic_sort[ordering])
+                restaurants = sub_category.restaurants.annotate(filtering=Avg("review__rating")).order_by(dic_sort[filtering])
                                 
                 restaurant_list = []            
                 for restaurant in restaurants:
@@ -65,11 +121,11 @@ class TopListView(View):
                             "profile_url"   : restaurant.review_set.order_by('?')[0].user.profile_url,
                             "nickname"      : restaurant.review_set.order_by('?')[0].user.nickname,
                             "image"         : restaurant.foods.all()[0].images.all()[0].image_url,
-                            "rating"        : round(restaurant.ordering, 1),
+                            "rating"        : round(restaurant.filtering, 1),
                             "restaurant_id" : restaurant.id
                         })
 
                 return JsonResponse({"message":"success", "result":restaurant_list}, status=200)
 
         except Restaurant.DoesNotExist:
-            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)         
+            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)

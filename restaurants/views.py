@@ -1,8 +1,10 @@
+import json
+
 from django.http        import JsonResponse
 from django.views       import View
 from django.db.models   import Avg
+from django.db.utils    import DataError
 
-from restaurants.models import Restaurant
 from restaurants.models import Restaurant, Food, SubCategory
 from users.utils        import ConfirmUser
 from users.models       import Review
@@ -29,7 +31,7 @@ class PopularRestaurantView(View):
                     "restaurant_id"     : restaurant.id
                 })
 
-            return JsonResponse({"message":"success", "result":restaurant_list[:5]}, status=200)
+            return JsonResponse({"message":"SUCCESS", "result":restaurant_list[:5]}, status=200)
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
@@ -66,12 +68,38 @@ class RestaurantDetailView(View):
             "average_rating" : average_rating,
             }
 
-            return JsonResponse({"message":"success", "result":result}, status=200)
+            return JsonResponse({"message":"SUCCESS", "result":result}, status=200)
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)        
 
 class RestaurantReviewView(View):
+    @ConfirmUser
+    def post(self, request, restaurant_id):
+        try:
+            data       = json.loads(request.body)
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+            content    = data["content"]
+            rating     = data["rating"]
+
+            Review.objects.create(
+                user       = request.user,
+                restaurant = restaurant,
+                content    = content,
+                rating     = rating
+            )
+
+            return JsonResponse({"message":"SUCCESS"}, status=201)
+
+        except KeyError:
+            return JsonResponse({"message":"KEY_ERROR"}, status=400)
+        
+        except DataError:
+            return JsonResponse({"message":"DATA_ERROR"}, status=400)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)     
+
     def get(self, request, restaurant_id):
         offset        = int(request.GET.get("offset", 0))
         limit         = int(request.GET.get("limit", 10))
@@ -120,7 +148,7 @@ class WishListView(View):
 
             request.user.wishlist_restaurants.add(restaurant)
             
-            return JsonResponse({"message":"success"}, status=201)
+            return JsonResponse({"message":"SUCCESS"}, status=201)
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)   
@@ -135,7 +163,7 @@ class WishListView(View):
            
             request.user.wishlist_restaurants.remove(restaurant)
 
-            return JsonResponse({"message":"success"}, status=204)
+            return JsonResponse({"message":"SUCCESS"}, status=204)
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)

@@ -7,7 +7,7 @@ from django.db.utils    import DataError
 
 from restaurants.models import Restaurant
 from users.utils        import ConfirmUser
-from users.models       import Review, User
+from users.models       import Review
 
 class PopularRestaurantView(View):
     def get(self, request):
@@ -31,7 +31,7 @@ class PopularRestaurantView(View):
                     "restaurant_id"     : restaurant.id
                 })
 
-            return JsonResponse({"message":"success", "result":restaurant_list[:5]}, status=200)
+            return JsonResponse({"message":"SUCCESS", "result":restaurant_list[:5]}, status=200)
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
@@ -68,7 +68,7 @@ class RestaurantDetailView(View):
             "average_rating" : average_rating,
             }
 
-            return JsonResponse({"message":"success", "result":result}, status=200)
+            return JsonResponse({"message":"SUCCESS", "result":result}, status=200)
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)        
@@ -89,7 +89,7 @@ class RestaurantReviewView(View):
                 rating     = rating
             )
 
-            return JsonResponse({"message":"success"}, status=201)
+            return JsonResponse({"message":"SUCCESS"}, status=201)
 
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)
@@ -99,3 +99,34 @@ class RestaurantReviewView(View):
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)     
+
+class WishListView(View):
+    @ConfirmUser
+    def post(self, request, restaurant_id):
+        try:
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+
+            if request.user.wishlist_restaurants.filter(id=restaurant_id).exists():
+                return JsonResponse({"message":"WISHLIST_ALREADY_EXISTS"}, status=400)
+
+            request.user.wishlist_restaurants.add(restaurant)
+            
+            return JsonResponse({"message":"SUCCESS"}, status=201)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)   
+        
+    @ConfirmUser
+    def delete(self, request, restaurant_id):
+        try:
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+
+            if not request.user.wishlist_restaurants.filter(id=restaurant_id).exists():
+                return JsonResponse({"message":"WISHLIST_NOT_EXISTS"}, status=404)
+           
+            request.user.wishlist_restaurants.remove(restaurant)
+
+            return JsonResponse({"message":"SUCCESS"}, status=204)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)

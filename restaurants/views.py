@@ -7,7 +7,7 @@ from django.db.models   import Avg
 from django.utils       import timezone
 
 from restaurants.models import Restaurant, Food, SubCategory
-from users.utils        import ConfirmUser
+from users.utils        import ConfirmUser, LooseConfirmUser
 from users.models       import Review
 
 class PopularRestaurantView(View):
@@ -38,12 +38,12 @@ class PopularRestaurantView(View):
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
 
 class RestaurantDetailView(View):
-    @ConfirmUser
+    @LooseConfirmUser
     def get(self, request, restaurant_id):
         try:
             restaurant = Restaurant.objects.get(id=restaurant_id)
             is_wished  = request.user.wishlist_restaurants.filter(id=restaurant_id).exists() if request.user else False
-
+            average_price  = Food.objects.filter(restaurant_id=restaurant_id).aggregate(Avg("price"))["price__avg"]
             reviews        = restaurant.review_set.all()
             average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
             review_count   = {
@@ -67,6 +67,7 @@ class RestaurantDetailView(View):
             "is_wished"      : is_wished,
             "review_count"   : review_count,
             "average_rating" : average_rating,
+            "average_price" : average_price,
             }
 
             return JsonResponse({"message":"SUCCESS", "result":result}, status=200)

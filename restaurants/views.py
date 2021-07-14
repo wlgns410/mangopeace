@@ -6,10 +6,9 @@ from django.db.utils    import DataError
 from django.db.models   import Avg
 from django.utils       import timezone
 
-from restaurants.models import Restaurant
-from restaurants.models import Restaurant
 from users.utils        import ConfirmUser
 from users.models       import Review
+from restaurants.models import Restaurant
 
 class PopularRestaurantView(View):
     def get(self, request):
@@ -75,6 +74,37 @@ class RestaurantDetailView(View):
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)        
 
+class WishListView(View):
+    @ConfirmUser
+    def post(self, request, restaurant_id):
+        try:
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+
+            if request.user.wishlist_restaurants.filter(id=restaurant_id).exists():
+                return JsonResponse({"message":"WISHLIST_ALREADY_EXISTS"}, status=400)
+
+            request.user.wishlist_restaurants.add(restaurant)
+            
+            return JsonResponse({"message":"success"}, status=201)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)   
+        
+    @ConfirmUser
+    def delete(self, request, restaurant_id):
+        try:
+            restaurant = Restaurant.objects.get(id=restaurant_id)
+
+            if not request.user.wishlist_restaurants.filter(id=restaurant_id).exists():
+                return JsonResponse({"message":"WISHLIST_NOT_EXISTS"}, status=404)
+           
+            request.user.wishlist_restaurants.remove(restaurant)
+
+            return JsonResponse({"message":"success"}, status=204)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)
+
 class ReviewView(View):
     @ConfirmUser
     def patch(self, request, restaurant_id, review_id):
@@ -83,14 +113,12 @@ class ReviewView(View):
             content = data["content"]
             rating  = data["rating"]
 
-            if Review.objects.filter(id=review_id).exists():
-                reviews = Review.objects.filter(id=review_id)
-            else:
+            if not Review.objects.filter(id=review_id, user_id=request.user.id).exists():
                 return JsonResponse({"message":"REVIEW_NOT_EXISTS"}, status=404)
-            
-            reviews.update(content=content, rating=rating, updated_at=timezone.now())
 
-            return JsonResponse({"message":"success"}, status=200)
+            Review.objects.filter(id=review_id, user_id=request.user.id).update(content=content, rating=rating, updated_at=timezone.now())
+            
+            return JsonResponse({"message":"success"}, status=204)
             
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)

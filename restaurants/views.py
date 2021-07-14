@@ -168,6 +168,21 @@ class WishListView(View):
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXISTS"}, status=404)
 
+class ReviewView(View):
+    @ConfirmUser
+    def delete(self, request, restaurant_id, review_id):
+        try:
+            review = Review.objects.get(id=review_id, user_id=request.user.id)
+            review.delete()
+
+            return JsonResponse({"message":"success"}, status=204)
+
+        except DataError:
+            return JsonResponse({"message":"DATA_ERROR"}, status=400)
+
+        except Review.DoesNotExist:
+            return JsonResponse({"message":"REVIEW_NOT_EXISTS"}, status=404)
+            
 class SubCategoryListView(View):
     def get(self, request):
         try:

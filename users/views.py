@@ -5,7 +5,7 @@ import datetime
 
 from django.views           import View
 from django.http            import JsonResponse
-from django.db.utils        import DataError
+from django.db.utils        import DataError, IntegrityError
 from django.db.models       import Avg
 
 from json.decoder           import JSONDecodeError
@@ -13,7 +13,6 @@ from json.decoder           import JSONDecodeError
 import my_settings
 from users.models           import Review, User
 from users.utils            import ConfirmUser
-from restaurants.models     import Image
 
 class SignInView(View):
     def post(self,request):
@@ -74,6 +73,9 @@ class SignupView(View):
         
         except DataError:
             return JsonResponse({"message": "DATA_ERROR"}, status=400)
+
+        except IntegrityError:
+            return JsonResponse({"message": "INTEGRITY_ERROR"}, status=400)
 
 class UserDetailView(View):
     @ConfirmUser

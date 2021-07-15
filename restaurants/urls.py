@@ -8,7 +8,8 @@ from restaurants.views import (
     RestaurantFoodsView,
     RestaurantReviewView,
     ReviewView,
-    RestaurantView
+    RestaurantView,
+    FilteringView
 )
 
 urlpatterns = [
@@ -20,4 +21,5 @@ urlpatterns = [
     path("/<int:restaurant_id>/reviews", RestaurantReviewView.as_view()),
     path("", RestaurantView.as_view()),
     path("/popular", PopularRestaurantView.as_view()),
+    path("/search", FilteringView.as_view()),
 ]

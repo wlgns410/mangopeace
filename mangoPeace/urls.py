@@ -4,3 +4,4 @@ urlpatterns = [
     path("restaurants", include("restaurants.urls")),
     path("users", include("users.urls")),
 ]
+

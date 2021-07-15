@@ -33,7 +33,7 @@ class SignInView(View):
                 algorithm = my_settings.ALGORITHM
             )
 
-            return JsonResponse({"message":"success", "access_token":access_token}, status=200)
+            return JsonResponse({"message":"SUCCESS", "access_token":access_token}, status=200)
 
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)   
@@ -48,7 +48,6 @@ class SignupView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-
             if not User.validate(data):
                 return JsonResponse({"message":"VALIDATION_ERROR"}, status=401)        
 
@@ -65,7 +64,7 @@ class SignupView(View):
             phone_number = phone_number,
             )
 
-            return JsonResponse({"message":"success"}, status=201)
+            return JsonResponse({"message":"SUCCESS"}, status=201)
 
         except JSONDecodeError:
             return JsonResponse({"message":"JSON_DECODE_ERROR"}, status=400)        
@@ -97,4 +96,4 @@ class UserDetailView(View):
             "wish_list"      : wish_list,
         }
         
-        return JsonResponse({"message":"success","result":result}, status=200)
+        return JsonResponse({"message":"SUCCESS","result":result}, status=200)

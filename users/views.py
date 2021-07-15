@@ -5,7 +5,7 @@ import datetime
 
 from django.views           import View
 from django.http            import JsonResponse
-from django.db.utils        import DataError
+from django.db.utils        import DataError, IntegrityError
 from django.db.models       import Avg
 
 from json.decoder           import JSONDecodeError
@@ -13,7 +13,6 @@ from json.decoder           import JSONDecodeError
 import my_settings
 from users.models           import Review, User
 from users.utils            import ConfirmUser
-from restaurants.models     import Image
 
 class SignInView(View):
     def post(self,request):
@@ -33,7 +32,7 @@ class SignInView(View):
                 algorithm = my_settings.ALGORITHM
             )
 
-            return JsonResponse({"message":"success", "access_token":access_token}, status=200)
+            return JsonResponse({"message":"SUCCESS", "access_token":access_token}, status=200)
 
         except KeyError:
             return JsonResponse({"message":"KEY_ERROR"}, status=400)   
@@ -48,7 +47,6 @@ class SignupView(View):
     def post(self, request):
         try:
             data = json.loads(request.body)
-
             if not User.validate(data):
                 return JsonResponse({"message":"VALIDATION_ERROR"}, status=401)        
 
@@ -65,7 +63,7 @@ class SignupView(View):
             phone_number = phone_number,
             )
 
-            return JsonResponse({"message":"success"}, status=201)
+            return JsonResponse({"message":"SUCCESS"}, status=201)
 
         except JSONDecodeError:
             return JsonResponse({"message":"JSON_DECODE_ERROR"}, status=400)        
@@ -75,6 +73,9 @@ class SignupView(View):
         
         except DataError:
             return JsonResponse({"message": "DATA_ERROR"}, status=400)
+
+        except IntegrityError:
+            return JsonResponse({"message": "INTEGRITY_ERROR"}, status=400)
 
 class UserDetailView(View):
     @ConfirmUser
@@ -97,4 +98,4 @@ class UserDetailView(View):
             "wish_list"      : wish_list,
         }
         
-        return JsonResponse({"message":"success","result":result}, status=200)
+        return JsonResponse({"message":"SUCCESS","result":result}, status=200)

@@ -15,7 +15,7 @@ class FilteringVeiw(View):
         offset  = int(request.GET.get('offset', 0))
         limit   = int(request.GET.get('limit', 6))
         sort    = request.GET.get("sort", "rating_sort")
-        repage  = request.GET.get("renew", None)
+        renew  = request.GET.get("renew", None)
         
         q = Q()
         if keyword:
@@ -24,11 +24,12 @@ class FilteringVeiw(View):
         category_restaurants        = Restaurant.objects.filter(sub_category__category__name__in=keyword).annotate(average_rating=Avg('review__rating'), review_counts=Count('review')).order_by(sorted_dict[sort])[offset:offset+limit]
         sub_category_restaurants    = Restaurant.objects.filter(sub_category__name__in=keyword).annotate(average_rating=Avg('review__rating'), review_counts=Count('review'))[offset:offset+limit]
         restaurants                 = Restaurant.objects.filter(q).annotate(average_rating=Avg('review__rating'), review_counts=Count('review'))[offset:offset+limit]
-        
-        if repage == "review_count":
-            Restaurant.objects.filter(sub_category__category__name__in=keyword).order_by(sorted_dict[repage])[offset:offset+limit]
-            Restaurant.objects.filter(sub_category__name__in=keyword).order_by(sorted_dict[repage])[offset:offset+limit]
-            Restaurant.objects.filter(q).order_by(sorted_dict[repage])[offset:offset+limit]
+        hello = [{Count(category_restaurants, sub_category_restaurants, restaurants)}]
+
+        if renew == "review_count":
+            Restaurant.objects.filter(sub_category__category__name__in=keyword).order_by(sorted_dict[renew])[offset:offset+limit]
+            Restaurant.objects.filter(sub_category__name__in=keyword).order_by(sorted_dict[renew])[offset:offset+limit]
+            Restaurant.objects.filter(q).order_by(sorted_dict[renew])[offset:offset+limit]
 
         category_result = [{
             "restaurantID"          : category_restaurant.id,
@@ -66,7 +67,7 @@ class FilteringVeiw(View):
             "review_count"          : restaurant.review_counts,
         }for restaurant in restaurants]
 
-        return JsonResponse({
+        return JsonResponse({"yes":hello,
             "category_result"       :category_result,
             "sub_category_result"   :sub_category_result,
             "restaurant_result"     :restaurant_result

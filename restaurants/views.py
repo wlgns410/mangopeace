@@ -7,7 +7,7 @@ from django.db.models   import Avg, Q, Count
 from django.utils       import timezone
 
 from restaurants.models import Restaurant, Food, SubCategory, Image
-from users.utils        import ConfirmUser
+from users.utils        import ConfirmUser, LooseConfirmUser
 from users.models       import Review
 
 class PopularRestaurantView(View):
@@ -37,25 +37,23 @@ class PopularRestaurantView(View):
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
 
+
 class RestaurantDetailView(View):
-    @ConfirmUser
+    @LooseConfirmUser
     def get(self, request, restaurant_id):
         try:
-            restaurant = Restaurant.objects.get(id=restaurant_id)
-            is_wished  = request.user.wishlist_restaurants.filter(id=restaurant_id).exists() if request.user else False
-
-            reviews        = restaurant.review_set.all()
-            average_rating = reviews.aggregate(Avg("rating"))["rating__avg"]
-            review_count   = {
-                "total"        : reviews.count(),
-                "rating_one"   : reviews.filter(rating=1).count(),
-                "rating_two"   : reviews.filter(rating=2).count(),
-                "rating_three" : reviews.filter(rating=3).count(),
-                "rating_four"  : reviews.filter(rating=4).count(),
-                "rating_five"  : reviews.filter(rating=5).count(),
-            }
-
-            result = {
+            restaurant         = Restaurant.objects.filter(id=restaurant_id).annotate(
+                rating_total   = Count("review"),
+                rating_one     = Count("review", filter=Q(review__rating=1)),
+                rating_two     = Count("review", filter=Q(review__rating=2)),
+                rating_three   = Count("review", filter=Q(review__rating=3)),
+                rating_four    = Count("review", filter=Q(review__rating=4)),
+                rating_five    = Count("review", filter=Q(review__rating=5)),
+                average_rating = Avg("review__rating")
+                )[0]
+            average_price      = restaurant.foods.aggregate(Avg("price"))["price__avg"]
+            is_wished          = request.user.wishlist_restaurants.filter(id=restaurant_id).exists() if request.user else False
+            result             = {
             "id"             : restaurant.id,
             "sub_category"   : restaurant.sub_category.name,
             "name"           : restaurant.name,
@@ -65,14 +63,25 @@ class RestaurantDetailView(View):
             "open_time"      : restaurant.open_time,
             "updated_at"     : restaurant.updated_at,
             "is_wished"      : is_wished,
-            "review_count"   : review_count,
-            "average_rating" : average_rating,
+            "review_count"   : {
+                "total"        : restaurant.rating_total,
+                "rating_one"   : restaurant.rating_one,
+                "rating_two"   : restaurant.rating_two,
+                "rating_three" : restaurant.rating_three,
+                "rating_four"  : restaurant.rating_four,
+                "rating_five"  : restaurant.rating_five,
+                },
+            "average_rating" : restaurant.average_rating,
+            "average_price"  : average_price,
             }
 
             return JsonResponse({"message":"SUCCESS", "result":result}, status=200)
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
+
+        except IndexError:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)   
 
 class RestaurantReviewView(View):
     @ConfirmUser

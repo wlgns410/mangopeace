@@ -79,15 +79,18 @@ class SignupView(View):
 class UserDetailView(View):
     @ConfirmUser
     def get(self, request):
-        wish_list  = [{
-            "name" : restaurant.name,
-            "address" : restaurant.address,
-            "sub_category" : restaurant.sub_category.name,
-            "average_rating" : Review.objects.filter(restaurant_id=restaurant.id).aggregate(Avg("rating"))["rating__avg"] 
+        for restaurant in request.user.wishlist_restaurants.annotate(average_rating=Avg("review__rating")):
+            print(restaurant.average_rating)
+        wish_list = [
+            {
+            "name"           : restaurant.name,
+            "address"        : restaurant.address,
+            "sub_category"   : restaurant.sub_category.name,
+            "average_rating" : restaurant.review_set.aggregate(Avg("rating"))["rating__avg"] # ! : 없을 경우 0으로
             if Review.objects.filter(restaurant_id=restaurant.id) else 0,
-            "is_wished" : True,
-            "food_image" : Image.objects.filter(food__restaurant__id=restaurant.id).first().image_url
-        }for restaurant in request.user.wishlist_restaurants.all()]
+            "is_wished"      : True,
+            "food_image"     : restaurant.foods.first().images.first().image_url
+            } for restaurant in request.user.wishlist_restaurants.annotate(average_rating=Avg("review__rating"))]
 
         result = {
             "nickname":request.user.nickname,

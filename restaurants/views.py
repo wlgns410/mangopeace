@@ -1,4 +1,5 @@
 import json
+from django.db.models.aggregates import Count
 
 from django.http        import JsonResponse
 from django.views       import View
@@ -43,14 +44,14 @@ class RestaurantDetailView(View):
         try:
             # ? : 왜 rating에 4가 곱해져서 나오지???? django shell에서는 멀쩡하게 나오는데.
             restaurant         = Restaurant.objects.filter(id=restaurant_id).annotate(
+                average_price  = Avg("foods__price"),
+                average_rating = Avg("review__rating"),
                 rating_total   = Count("review"),
                 rating_one     = Count("review", filter=Q(review__rating=1)),
                 rating_two     = Count("review", filter=Q(review__rating=2)),
                 rating_three   = Count("review", filter=Q(review__rating=3)),
                 rating_four    = Count("review", filter=Q(review__rating=4)),
                 rating_five    = Count("review", filter=Q(review__rating=5)),
-                average_price  = Avg("foods__price"),
-                average_rating = Avg("review__rating")
                 )[0]
             is_wished          = request.user.wishlist_restaurants.filter(id=restaurant_id).exists() if request.user else False
             result             = {

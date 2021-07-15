@@ -1,4 +1,5 @@
 import json
+from django.db.models.query_utils import Q
 
 from django.http                 import JsonResponse
 from django.views                import View
@@ -54,8 +55,7 @@ class RestaurantDetailView(View):
                 )[0]
             average_price      = restaurant.foods.aggregate(Avg("price"))["price__avg"]
             is_wished          = request.user.wishlist_restaurants.filter(id=restaurant_id).exists() if request.user else False
-
-            result = {
+            result             = {
             "id"             : restaurant.id,
             "sub_category"   : restaurant.sub_category.name,
             "name"           : restaurant.name,
@@ -229,3 +229,34 @@ class SubCategoryListView(View):
 
         except SubCategory.DoesNotExist:
             return JsonResponse({"message":"sub_category_NOT_EXIST"}, status=404)
+
+class RestaurantView(View):
+    def get(self, request):
+        try:
+            ordering        = request.GET.get("ordering", None)
+            sub_category    = int(request.GET.get("sub_category_id", None))
+
+            if sub_category:
+                restaurants = Restaurant.objects.filter(sub_category_id=sub_category).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
+
+            else:
+                restaurants = Restaurant.objects.annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
+
+            restaurant_list = []
+
+            for restaurant in restaurants:
+                restaurant_list.append({
+                        "name"          : restaurant.name,
+                        "address"       : restaurant.address,
+                        "content"       : restaurant.review_set.order_by('?')[0].content,
+                        "profile_url"   : restaurant.review_set.order_by('?')[0].user.profile_url,
+                        "nickname"      : restaurant.review_set.order_by('?')[0].user.nickname,
+                        "image"         : restaurant.foods.all()[0].images.all()[0].image_url,
+                        "rating"        : round(restaurant.average_rating, 1),
+                        "restaurant_id" : restaurant.id
+                    })          
+
+            return JsonResponse({"message":"success", "result":restaurant_list[:5]}, status=200)
+
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)

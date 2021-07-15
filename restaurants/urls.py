@@ -7,15 +7,17 @@ from restaurants.views import (
     SubCategoryListView,
     RestaurantFoodsView,
     RestaurantReviewView,
-    ReviewView
+    ReviewView,
+    RestaurantView
 )
 
 urlpatterns = [
-    path("", PopularRestaurantView.as_view()),
     path("/<int:restaurant_id>/foods", RestaurantFoodsView.as_view()),
     path("/<int:restaurant_id>", RestaurantDetailView.as_view()),  
     path("/banner-list", SubCategoryListView.as_view()),
     path("/<int:restaurant_id>/wishlist", WishListView.as_view()),
     path("/<int:restaurant_id>/review/<int:review_id>", ReviewView.as_view()),  
     path("/<int:restaurant_id>/reviews", RestaurantReviewView.as_view()),
+    path("", RestaurantView.as_view()),
+    path("/popular", PopularRestaurantView.as_view()),
 ]

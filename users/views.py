@@ -79,8 +79,6 @@ class SignupView(View):
 class UserDetailView(View):
     @ConfirmUser
     def get(self, request):
-        for restaurant in request.user.wishlist_restaurants.annotate(average_rating=Avg("review__rating")):
-            print(restaurant.average_rating)
         wish_list = [
             {
             "name"           : restaurant.name,

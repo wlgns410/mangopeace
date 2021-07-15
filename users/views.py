@@ -86,17 +86,16 @@ class UserDetailView(View):
             "name"           : restaurant.name,
             "address"        : restaurant.address,
             "sub_category"   : restaurant.sub_category.name,
-            "average_rating" : restaurant.review_set.aggregate(Avg("rating"))["rating__avg"] # ! : 없을 경우 0으로
+            "average_rating" : restaurant.review_set.aggregate(Avg("rating"))["rating__avg"] if restaurant.review_set.all().exists() else 0
             if Review.objects.filter(restaurant_id=restaurant.id) else 0,
             "is_wished"      : True,
             "food_image"     : restaurant.foods.first().images.first().image_url
             } for restaurant in request.user.wishlist_restaurants.annotate(average_rating=Avg("review__rating"))]
-
         result = {
-            "nickname":request.user.nickname,
-            "email":request.user.email,
-            "profile_url":request.user.profile_url,
-            "wish_list" : wish_list,
+            "nickname"       : request.user.nickname,
+            "email"          : request.user.email,
+            "profile_url"    : request.user.profile_url,
+            "wish_list"      : wish_list,
         }
         
         return JsonResponse({"message":"success","result":result}, status=200)

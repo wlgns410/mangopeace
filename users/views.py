@@ -81,6 +81,7 @@ class UserDetailView(View):
     def get(self, request):
         wish_list = [
             {
+            "id"             : restaurant.id,
             "name"           : restaurant.name,
             "address"        : restaurant.address,
             "sub_category"   : restaurant.sub_category.name,

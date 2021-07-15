@@ -220,7 +220,7 @@ class SubCategoryListView(View):
             for subcategory in subcategorys:                            
                 subcategory_list.append({
                     "sub_category" : subcategory.id,
-                    "image" : subcategory.restaurants.first().foods.first().images.first().image_url
+                    "image" : subcategory.restaurant.first().foods.first().images.first().image_url
                 })
 
             return JsonResponse({"message":"success", "result":subcategory_list}, status=200)

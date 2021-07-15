@@ -1,15 +1,15 @@
 import json
+
+from django.http                 import JsonResponse
+from django.views                import View
+from django.db.utils             import DataError
+from django.db.models            import Avg
+from django.utils                import timezone
 from django.db.models.aggregates import Count
 
-from django.http        import JsonResponse
-from django.views       import View
-from django.db.utils    import DataError
-from django.db.models   import Avg
-from django.utils       import timezone
-
-from restaurants.models import Restaurant, Food, SubCategory
-from users.utils        import ConfirmUser, LooseConfirmUser
-from users.models       import Review
+from restaurants.models          import Restaurant, Food, SubCategory
+from users.utils                 import ConfirmUser, LooseConfirmUser
+from users.models                import Review
 
 class PopularRestaurantView(View):
     def get(self, request):
@@ -38,51 +38,52 @@ class PopularRestaurantView(View):
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
 
+
 class RestaurantDetailView(View):
     @LooseConfirmUser
     def get(self, request, restaurant_id):
         try:
-            # ? : 왜 rating에 4가 곱해져서 나오지???? django shell에서는 멀쩡하게 나오는데.
             restaurant         = Restaurant.objects.filter(id=restaurant_id).annotate(
-                average_price  = Avg("foods__price"),
-                average_rating = Avg("review__rating"),
                 rating_total   = Count("review"),
                 rating_one     = Count("review", filter=Q(review__rating=1)),
                 rating_two     = Count("review", filter=Q(review__rating=2)),
                 rating_three   = Count("review", filter=Q(review__rating=3)),
                 rating_four    = Count("review", filter=Q(review__rating=4)),
                 rating_five    = Count("review", filter=Q(review__rating=5)),
+                average_rating = Avg("review__rating")
                 )[0]
+            average_price      = restaurant.foods.aggregate(Avg("price"))["price__avg"]
             is_wished          = request.user.wishlist_restaurants.filter(id=restaurant_id).exists() if request.user else False
-            result             = {
-                "id"             : restaurant.id,
-                "sub_category"   : restaurant.sub_category.name,
-                "name"           : restaurant.name,
-                "address"        : restaurant.address,
-                "phone_number"   : restaurant.phone_number,
-                "coordinate"     : restaurant.coordinate,
-                "open_time"      : restaurant.open_time,
-                "updated_at"     : restaurant.updated_at,
-                "is_wished"      : is_wished,
-                "review_count"   : {
-                    "total"        : restaurant.rating_total,
-                    "rating_one"   : restaurant.rating_one,
-                    "rating_two"   : restaurant.rating_two,
-                    "rating_three" : restaurant.rating_three,
-                    "rating_four"  : restaurant.rating_four,
-                    "rating_five"  : restaurant.rating_five,
-                    },
-                "average_rating" : restaurant.average_rating,
-                "average_price"  : restaurant.average_price,
+
+            result = {
+            "id"             : restaurant.id,
+            "sub_category"   : restaurant.sub_category.name,
+            "name"           : restaurant.name,
+            "address"        : restaurant.address,
+            "phone_number"   : restaurant.phone_number,
+            "coordinate"     : restaurant.coordinate,
+            "open_time"      : restaurant.open_time,
+            "updated_at"     : restaurant.updated_at,
+            "is_wished"      : is_wished,
+            "review_count"   : {
+                "total"        : restaurant.rating_total,
+                "rating_one"   : restaurant.rating_one,
+                "rating_two"   : restaurant.rating_two,
+                "rating_three" : restaurant.rating_three,
+                "rating_four"  : restaurant.rating_four,
+                "rating_five"  : restaurant.rating_five,
+                },
+            "average_rating" : restaurant.average_rating,
+            "average_price"  : average_price,
             }
 
             return JsonResponse({"message":"SUCCESS", "result":result}, status=200)
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
-        # ? : DoesNotExist가 에러 메세지로는 더 낫지 않나.
+
         except IndexError:
-            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)     
+            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)   
 
 class RestaurantReviewView(View):
     @ConfirmUser

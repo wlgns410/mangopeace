@@ -6,11 +6,14 @@ import datetime
 from django.views           import View
 from django.http            import JsonResponse
 from django.db.utils        import DataError
+from django.db.models       import Avg
 
 from json.decoder           import JSONDecodeError
 
 import my_settings
-from users.models           import User
+from users.models           import Review, User
+from users.utils            import ConfirmUser
+from restaurants.models     import Image
 
 class SignInView(View):
     def post(self,request):
@@ -72,3 +75,25 @@ class SignupView(View):
         
         except DataError:
             return JsonResponse({"message": "DATA_ERROR"}, status=400)
+
+class UserDetailView(View):
+    @ConfirmUser
+    def get(self, request):
+        wish_list = [
+            {
+            "name"           : restaurant.name,
+            "address"        : restaurant.address,
+            "sub_category"   : restaurant.sub_category.name,
+            "average_rating" : restaurant.review_set.aggregate(Avg("rating"))["rating__avg"] if restaurant.review_set.all().exists() else 0
+            if Review.objects.filter(restaurant_id=restaurant.id) else 0,
+            "is_wished"      : True,
+            "food_image"     : restaurant.foods.first().images.first().image_url
+            } for restaurant in request.user.wishlist_restaurants.annotate(average_rating=Avg("review__rating"))]
+        result = {
+            "nickname"       : request.user.nickname,
+            "email"          : request.user.email,
+            "profile_url"    : request.user.profile_url,
+            "wish_list"      : wish_list,
+        }
+        
+        return JsonResponse({"message":"success","result":result}, status=200)

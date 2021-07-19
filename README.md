@@ -23,11 +23,18 @@
 
 ## 적용 기술 및 구현 기능
 
+### 협업 툴
+
+> - [Notion](https://www.notion.so/072c9c94dcaa424486c3e8b567a234b1)
+> - [Trello](https://trello.com/b/aXkK1j1t/%EC%8B%B8%EC%9A%B0%EC%A7%80%EB%A7%9D%EA%B3%A0-%F0%9F%A5%AD)
+> - Slack
+> - Postman
+
 ### 적용 기술
 
 > - Front-End : javascript, React.js framwork, sass, Kakao Map API
 > - Back-End : Python, Django web framework, MySQL, Bcrypt, pyjwt
-> - Common : POSTMAN, RESTful API
+> - Common : AWS, RESTful API
 
 
 ### 구현 기능

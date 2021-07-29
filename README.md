@@ -21,14 +21,17 @@
 
 <br>
 
-## 적용 기술 및 구현 기능
+## 적용 기술 및 협업 툴
 
 ### 적용 기술
 
 > - Front-End : javascript, React.js framwork, sass, Kakao Map API
-> - Back-End : Python, Django web framework, MySQL, Bcrypt, pyjwt
+> - Back-End : Python, Django web framework, MySQL, Bcrypt, pyjwt, AWS
 > - Common : POSTMAN, RESTful API
 
+### 협업 툴
+> - [Notion](https://www.notion.so/072c9c94dcaa424486c3e8b567a234b1)
+> - [Trello](https://trello.com/b/aXkK1j1t/%EC%8B%B8%EC%9A%B0%EC%A7%80%EB%A7%9D%EA%B3%A0-%F0%9F%A5%AD)
 
 ### 구현 기능
 
@@ -40,8 +43,8 @@
 #### 메인페이지
 
 - 검색바에서 키워드 검색시 검색 페이지로 이동.
-- 맛집 리스트 배너. 클릭 시 리스트 페이지로 이동.
-- TOP5 식당 배너. 클릭 시 해당 식당의 상세 페이지로 이동.
+- 맛집 리스트 배너. 클릭 시 리스트 페이지로 이동.[**이지훈**]
+- TOP5 식당 배너. 클릭 시 해당 식당의 상세 페이지로 이동.[**이지훈**]
 - 하단 푸터를 통한 사이트 설명.
 
 #### 검색 페이지
@@ -50,7 +53,7 @@
 - 리뷰순, 평점순, 가격대에 대한 세부 필터링.
 - 페이지네이션.
 
-#### 리스트페이지
+#### 리스트페이지 [**이지훈**]
 
 - 카테고리에 대한 식당 리스트를 평점순으로 나열.
 - 클릭시 상세 페이지로 이동.

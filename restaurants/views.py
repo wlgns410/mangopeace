@@ -28,7 +28,7 @@ class PopularRestaurantView(View):
                     "restaurant_name"   : restaurant.name,
                     "address"           : restaurant.address,
                     "rating"            : round(restaurant.filtering, 1),
-                    "image"             : restaurant.foods.all()[0].images.all()[0].image_url,
+                    "image"             : restaurant.foods.all()[0].images.all()[0].image_url if restaurant.foods.all()[0].images.all() else False,
                     "restaurant_id"     : restaurant.id
                 })
 
@@ -233,23 +233,27 @@ class RestaurantView(View):
         try:
             ordering        = request.GET.get("ordering", None)
             sub_category    = int(request.GET.get("sub_category_id", None))
+            
+            # q = Q()
+            # if sub_category:
+            #     q &= Q(sub_category_id__in = sub_category)
+            #     restaurants = Restaurant.objects.filter(q).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering, None)
 
             if sub_category:
                 restaurants = Restaurant.objects.filter(sub_category_id=sub_category).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
-
+            
             else:
                 restaurants = Restaurant.objects.annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
 
             restaurant_list = []
-
             for restaurant in restaurants:
                 restaurant_list.append({
                         "name"          : restaurant.name,
                         "address"       : restaurant.address,
-                        "content"       : restaurant.review_set.order_by('?')[0].content,
-                        "profile_url"   : restaurant.review_set.order_by('?')[0].user.profile_url,
-                        "nickname"      : restaurant.review_set.order_by('?')[0].user.nickname,
-                        "image"         : restaurant.foods.all()[0].images.all()[0].image_url,
+                        "content"       : restaurant.review_set.order_by('?')[0].content if restaurant.review_set.order_by('?') else None,
+                        "profile_url"   : restaurant.review_set.order_by('?')[0].user.profile_url if restaurant.review_set.order_by('?') else None,
+                        "nickname"      : restaurant.review_set.order_by('?')[0].user.nickname if restaurant.review_set.order_by('?') else None,
+                        "image"         : restaurant.foods.all()[0].images.all()[0].image_url if restaurant.foods.all()[0].images.all() else None,
                         "rating"        : round(restaurant.average_rating, 1),
                         "restaurant_id" : restaurant.id
                     })          

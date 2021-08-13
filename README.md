@@ -26,7 +26,7 @@
 ### 적용 기술
 
 > - Front-End : javascript, React.js framwork, sass, Kakao Map API
-> - Back-End : Python, Django web framework, MySQL, Bcrypt, pyjwt, AWS
+> - Back-End : Python, Django web framework, MySQL, Bcrypt, pyjwt
 > - Common : POSTMAN, RESTful API
 
 ### 협업 툴

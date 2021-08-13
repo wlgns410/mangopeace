@@ -2,8 +2,8 @@
 
 ## 프로젝트 소개
 - 망고플레이트란, 사용자 데이터 기반의 식당추천 서비스로 주변 맛집 정보 및 추천 맛집 리스트 등, 종합적인 맛집 발견 경험을 제공하는 사이트입니다.
-- 우리의 프로젝트는, 망고플레이트의 기능(맛집 리스트, 검색 필터링, 가고싶다, 리뷰, 평점 등)을 선릉 주변의 실제 식당 데이터에 적용한 클론 프로젝트입니다.
-- 짧은 프로젝트 기간동안 개발에 집중해야 하므로 디자인 및 기능의 기획 부분만 클론했습니다.
+- 우리의 프로젝트는, 망고플레이트의 기능(맛집 리스트, 검색 필터링, 가고싶다, 리뷰, 평점 등)을 모티브한 프로젝트입니다.
+- 짧은 프로젝트 기간동안 개발에 집중해야 하므로 디자인 및 기능의 기획 부분을 차용했습니다.
 - 개발은 초기 세팅부터 전부 직접 구현했으며, 모두 백앤드와 연결하여 실제 사용할 수 있는 서비스 수준으로 개발한 것입니다.
 - [백엔드 github 링크](https://github.com/wecode-bootcamp-korea/20-2nd-BeerBnB-backend)
 - [프론트엔드 github 링크](https://github.com/wecode-bootcamp-korea/22-1st-mangoPeace-frontend)
@@ -23,11 +23,19 @@
 
 ## 적용 기술 및 협업 툴
 
+### 협업 툴
+
+> - [Notion](https://www.notion.so/072c9c94dcaa424486c3e8b567a234b1)
+> - [Trello](https://trello.com/b/aXkK1j1t/%EC%8B%B8%EC%9A%B0%EC%A7%80%EB%A7%9D%EA%B3%A0-%F0%9F%A5%AD)
+> - Github
+> - Slack
+> - Postman
+
 ### 적용 기술
 
 > - Front-End : javascript, React.js framwork, sass, Kakao Map API
 > - Back-End : Python, Django web framework, MySQL, Bcrypt, pyjwt
-> - Common : POSTMAN, RESTful API
+> - Common : AWS, RESTful API
 
 ### 협업 툴
 > - [Notion](https://www.notion.so/072c9c94dcaa424486c3e8b567a234b1)

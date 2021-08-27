@@ -229,36 +229,34 @@ class SubCategoryListView(View):
             return JsonResponse({"message":"sub_category_NOT_EXIST"}, status=404)
 
 class RestaurantView(View):
-    def get(self, request):
+    def get(self, request, restaurant_id):
         try:
             ordering        = request.GET.get("ordering", None)
             sub_category    = int(request.GET.get("sub_category_id", None))
-            
-            # q = Q()
-            # if sub_category:
-            #     q &= Q(sub_category_id__in = sub_category)
-            #     restaurants = Restaurant.objects.filter(q).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering, None)
+            reviews         = Review.objects.filter(restaurant_id=restaurant_id).order_by("-created_at")
 
             if sub_category:
                 restaurants = Restaurant.objects.filter(sub_category_id=sub_category).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
             
             else:
                 restaurants = Restaurant.objects.annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
+            
+            restaurant_list = [{
+                "name"          : restaurant.name,
+                "address"       : restaurant.address,
+                "image"         : restaurant.foods.all()[0].images.all()[0].image_url if restaurant.foods.all()[0].images.all() else None,
+                "rating"        : round(restaurant.average_rating, 1),
+                "restaurant_id" : restaurant.id
+            }for restaurant in restaurants]          
 
-            restaurant_list = []
-            for restaurant in restaurants:
-                restaurant_list.append({
-                        "name"          : restaurant.name,
-                        "address"       : restaurant.address,
-                        "content"       : restaurant.review_set.order_by('?')[0].content if restaurant.review_set.order_by('?') else None,
-                        "profile_url"   : restaurant.review_set.order_by('?')[0].user.profile_url if restaurant.review_set.order_by('?') else None,
-                        "nickname"      : restaurant.review_set.order_by('?')[0].user.nickname if restaurant.review_set.order_by('?') else None,
-                        "image"         : restaurant.foods.all()[0].images.all()[0].image_url if restaurant.foods.all()[0].images.all() else None,
-                        "rating"        : round(restaurant.average_rating, 1),
-                        "restaurant_id" : restaurant.id
-                    })          
-
-            return JsonResponse({"message":"success", "result":restaurant_list[:5]}, status=200)
+            review_list   = [{
+                "id"          : review.user.id if review.user else None,
+                "content"     : review.content if review.content else None,
+                "profile_url" : review.user.profile_url if review.user else None,
+                "nickname"    : review.user.profile_url if review.user else None
+            }for review in reviews]
+            
+            return JsonResponse({"message":"success", "restaurant_list":restaurant_list[:5], "review_list" : review_list}, status=200)
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)

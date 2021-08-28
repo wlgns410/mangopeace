@@ -1,5 +1,5 @@
 import json
-
+from django.db.models.query import Prefetch
 from django.http        import JsonResponse
 from django.views       import View
 from django.db.utils    import DataError
@@ -211,22 +211,29 @@ class ReviewView(View):
         except Review.DoesNotExist:
             return JsonResponse({"message":"REVIEW_NOT_EXISTS"}, status=404)
             
-class SubCategoryListView(View):
+class BannerView(View):
     def get(self, request):
         try:
-            subcategorys = SubCategory.objects.all()
-                    
-            subcategory_list = []
-            for subcategory in subcategorys:                            
-                subcategory_list.append({
-                    "sub_category" : subcategory.id,
-                    "image" : subcategory.restaurant.first().foods.first().images.first().image_url
-                })
+            # restaurant :related_name, to_attr : customizedname
+            subcategories = SubCategory.objects.prefetch_related(
+                Prefetch("restaurant", queryset=Restaurant.objects.prefetch_related(
+                    Prefetch("foods", queryset=Food.objects.prefetch_related(
+                            Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")
+                            ), to_attr="all_foods")
+                            ), to_attr="all_restaurants")
+            )
+
+            # Can't use .first(), but Can use [0]
+            subcategory_list = [{
+                "sub_category_id" : subcategory.id,
+                "name" : subcategory.name,
+                "image" : subcategory.all_restaurants[0].all_foods[0].all_images[0].image_url,
+            }for subcategory in subcategories]
 
             return JsonResponse({"message":"success", "result":subcategory_list}, status=200)
 
-        except SubCategory.DoesNotExist:
-            return JsonResponse({"message":"sub_category_NOT_EXIST"}, status=404)
+        except Restaurant.DoesNotExist:
+            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
 
 class RestaurantView(View):
     def get(self, request, restaurant_id):

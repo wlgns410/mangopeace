@@ -30,7 +30,8 @@ INSTALLED_APPS = [
     'users',
     'restaurants',
     'drf_yasg',
-    'rest_framework'
+    'rest_framework',
+    'django_extensions'
 ]
 
 MIDDLEWARE = [

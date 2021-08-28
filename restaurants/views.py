@@ -214,9 +214,9 @@ class ReviewView(View):
 class BannerView(View):
     def get(self, request):
         try:
-            # restaurant :related_name, to_attr : customizedname
+            # restaurants :related_name, to_attr : customizedname
             subcategories = SubCategory.objects.prefetch_related(
-                Prefetch("restaurant", queryset=Restaurant.objects.prefetch_related(
+                Prefetch("restaurants", queryset=Restaurant.objects.prefetch_related(
                     Prefetch("foods", queryset=Food.objects.prefetch_related(
                             Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")
                             ), to_attr="all_foods")

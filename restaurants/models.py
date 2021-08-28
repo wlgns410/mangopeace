@@ -27,7 +27,7 @@ class SubCategory(Model):
         db_table = "sub_categories"
 
 class Restaurant(TimeStampModel):
-    sub_category = ForeignKey(SubCategory, on_delete=PROTECT, related_name="restaurant")
+    sub_category = ForeignKey(SubCategory, on_delete=PROTECT, related_name="restaurants")
     name         = CharField(max_length=45)
     address      = CharField(max_length=200, unique=True)
     phone_number = CharField(max_length=20, unique=True)

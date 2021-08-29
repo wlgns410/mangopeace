@@ -257,10 +257,10 @@ class RestaurantView(View):
             }for restaurant in restaurants]          
 
             review_list   = [{
-                "id"          : review.user.id if review.user else None,
-                "content"     : review.content if review.content else None,
+                "id"          : review.user.id,
+                "content"     : review.content,
                 "profile_url" : review.user.profile_url if review.user else None,
-                "nickname"    : review.user.profile_url if review.user else None
+                "nickname"    : review.user.nickname
             }for review in reviews]
             
             return JsonResponse({"message":"success", "restaurant_list":restaurant_list[:5], "review_list" : review_list}, status=200)

@@ -238,9 +238,9 @@ class BannerView(View):
 class RestaurantView(View):
     def get(self, request, restaurant_id):
         try:
-            ordering        = request.GET.get("ordering", None)
-            sub_category    = int(request.GET.get("sub_category_id", None))
-            reviews         = Review.objects.filter(restaurant_id=restaurant_id).order_by("-created_at")
+            ordering = request.GET.get("ordering", None)
+            sub_category = int(request.GET.get("sub_category_id", None))
+            reviews = Review.objects.filter(restaurant_id=restaurant_id).order_by("-created_at")
 
             if sub_category:
                 restaurants = Restaurant.objects.filter(sub_category_id=sub_category).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
@@ -249,18 +249,18 @@ class RestaurantView(View):
                 restaurants = Restaurant.objects.annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
             
             restaurant_list = [{
-                "name"          : restaurant.name,
-                "address"       : restaurant.address,
-                "image"         : restaurant.foods.all()[0].images.all()[0].image_url if restaurant.foods.all()[0].images.all() else None,
-                "rating"        : round(restaurant.average_rating, 1),
+                "name" : restaurant.name,
+                "address" : restaurant.address,
+                "image" : restaurant.foods.all()[0].images.all()[0].image_url if restaurant.foods.all()[0].images.all() else None,
+                "rating" : round(restaurant.average_rating, 1),
                 "restaurant_id" : restaurant.id
             }for restaurant in restaurants]          
 
             review_list   = [{
-                "id"          : review.user.id,
-                "content"     : review.content,
+                "review_id" : review.user.id,
+                "content" : review.content,
                 "profile_url" : review.user.profile_url if review.user else None,
-                "nickname"    : review.user.nickname
+                "nickname" : review.user.nickname
             }for review in reviews]
             
             return JsonResponse({"message":"success", "restaurant_list":restaurant_list[:5], "review_list" : review_list}, status=200)

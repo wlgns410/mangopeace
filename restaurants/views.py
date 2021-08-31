@@ -294,7 +294,7 @@ class FilteringView(View):
 
         category_restaurants        = Restaurant.objects.filter(sub_category__category__name__in=keyword).annotate(average_rating=Avg('review__rating'), review_counts=Count('review')).order_by(sorted_dict[sort])[offset:offset+limit]
         sub_category_restaurants    = Restaurant.objects.filter(sub_category__name__in=keyword).annotate(average_rating=Avg('review__rating'), review_counts=Count('review'))[offset:offset+limit]
-        restaurants                 = Restaurant.objects.filter(q).annotate(average_rating=Avg('review__rating'), review_counts=Count('review'))[offset:offset+limit]
+        restaurants_list            = Restaurant.objects.filter(q).annotate(average_rating=Avg('review__rating'), review_counts=Count('review'))[offset:offset+limit]
         
 
         if renew == "review_count":
@@ -336,7 +336,7 @@ class FilteringView(View):
             "food_image_url"        : Image.objects.filter(food__id = restaurant.foods.first().id).first().image_url,
             "average_rating"        : restaurant.average_rating,
             "review_count"          : restaurant.review_counts,
-        }for restaurant in restaurants]
+        }for restaurant in restaurants_list]
 
         return JsonResponse({
             "category_result"       :category_result,

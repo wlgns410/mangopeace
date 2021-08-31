@@ -1,7 +1,7 @@
 from django.urls import path
 
 from restaurants.views import (
-    PopularRestaurantView,
+    PopularView,
     RestaurantDetailView,
     WishListView,
     BannerView,
@@ -20,6 +20,6 @@ urlpatterns = [
     path("/<int:restaurant_id>/review/<int:review_id>", ReviewView.as_view()),  
     path("/<int:restaurant_id>/reviews", RestaurantReviewView.as_view()),
     path("/restaurant-list/<int:restaurant_id>", RestaurantView.as_view()),
-    path("/popular", PopularRestaurantView.as_view()),
+    path("/popular", PopularView.as_view()),
     path("/search", FilteringView.as_view()),
 ]

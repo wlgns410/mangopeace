@@ -10,27 +10,27 @@ from restaurants.models import Restaurant, Food, SubCategory, Image
 from users.utils        import ConfirmUser, LooseConfirmUser
 from users.models       import Review
 
-class PopularRestaurantView(View):
+class PopularView(View):
     def get(self, request):
         try:
             dict_sort={
                 "average_rating" : "-filtering"
             }
             filtering = request.GET.get("filtering", None)
-            restaurants = Restaurant.objects.annotate(filtering=Avg("review__rating")).order_by(dict_sort[filtering])
+            restaurants = Restaurant.objects.select_related("sub_category", "sub_category__category").prefetch_related(
+                Prefetch("foods", queryset=Food.objects.prefetch_related(
+                    Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")
+                    ), to_attr="all_foods")).annotate(filtering=Avg("review__rating")).order_by(dict_sort[filtering])
             
-            restaurant_list = []
-            
-            for restaurant in restaurants: 
-                restaurant_list.append({
-                    "sub_category"      : restaurant.sub_category.name,
-                    "category"          : restaurant.sub_category.category.name,
-                    "restaurant_name"   : restaurant.name,
-                    "address"           : restaurant.address,
-                    "rating"            : round(restaurant.filtering, 1),
-                    "image"             : restaurant.foods.all()[0].images.all()[0].image_url if restaurant.foods.all()[0].images.all() else False,
-                    "restaurant_id"     : restaurant.id
-                })
+            restaurant_list = [{
+                    "sub_category" : restaurant.sub_category.name,
+                    "category" : restaurant.sub_category.category.name,
+                    "restaurant_name" : restaurant.name,
+                    "address" : restaurant.address,
+                    "rating" : round(restaurant.filtering, 1),
+                    "image" : restaurant.all_foods[0].all_images[0].image_url,
+                    "restaurant_id" : restaurant.id
+            }for restaurant in restaurants]
 
             return JsonResponse({"message":"SUCCESS", "result":restaurant_list[:5]}, status=200)
 
@@ -42,40 +42,44 @@ class RestaurantDetailView(View):
     @LooseConfirmUser
     def get(self, request, restaurant_id):
         try:
-            restaurant         = Restaurant.objects.filter(id=restaurant_id).annotate(
-                rating_total   = Count("review"),
-                rating_one     = Count("review", filter=Q(review__rating=1)),
-                rating_two     = Count("review", filter=Q(review__rating=2)),
-                rating_three   = Count("review", filter=Q(review__rating=3)),
-                rating_four    = Count("review", filter=Q(review__rating=4)),
-                rating_five    = Count("review", filter=Q(review__rating=5)),
+            is_wished = request.user.wishlist_restaurants.filter(id=restaurant_id).exists() if request.user else False
+
+            restaurant = Restaurant.objects.select_related("sub_category").prefetch_related("foods").filter(id=restaurant_id).annotate(
+                rating_total = Count("review"),
+                rating_one = Count("review", filter=Q(review__rating=1)),
+                rating_two = Count("review", filter=Q(review__rating=2)),
+                rating_three = Count("review", filter=Q(review__rating=3)),
+                rating_four = Count("review", filter=Q(review__rating=4)),
+                rating_five = Count("review", filter=Q(review__rating=5)),
                 average_rating = Avg("review__rating")
-                )[0]
-            average_price      = restaurant.foods.aggregate(Avg("price"))["price__avg"]
-            is_wished          = request.user.wishlist_restaurants.filter(id=restaurant_id).exists() if request.user else False
-            result             = {
-            "id"             : restaurant.id,
-            "sub_category"   : restaurant.sub_category.name,
-            "name"           : restaurant.name,
-            "address"        : restaurant.address,
-            "phone_number"   : restaurant.phone_number,
-            "coordinate"     : restaurant.coordinate,
-            "open_time"      : restaurant.open_time,
-            "updated_at"     : restaurant.updated_at,
-            "is_wished"      : is_wished,
-            "review_count"   : {
-                "total"        : restaurant.rating_total,
-                "rating_one"   : restaurant.rating_one,
-                "rating_two"   : restaurant.rating_two,
+            )[0]
+
+            average_price = restaurant.foods.aggregate(Avg("price"))["price__avg"]
+
+            detail_result = {
+            "sub_category_id" : restaurant.sub_category.id,
+            "restaurant_id" : restaurant.id,
+            "sub_category" : restaurant.sub_category.name,
+            "name" : restaurant.name,
+            "address" : restaurant.address,
+            "phone_number" : restaurant.phone_number,
+            "coordinate" : restaurant.coordinate,
+            "open_time" : restaurant.open_time,
+            "updated_at" : restaurant.updated_at,
+            "is_wished" : is_wished,
+            "review_count" : {
+                "total" : restaurant.rating_total,
+                "rating_one" : restaurant.rating_one,
+                "rating_two" : restaurant.rating_two,
                 "rating_three" : restaurant.rating_three,
-                "rating_four"  : restaurant.rating_four,
-                "rating_five"  : restaurant.rating_five,
+                "rating_four" : restaurant.rating_four,
+                "rating_five" : restaurant.rating_five,
                 },
-            "average_rating" : restaurant.average_rating,
-            "average_price"  : average_price,
+            "average_rating" : round(restaurant.average_rating, 1),
+            "average_price" : round(average_price, 0)
             }
 
-            return JsonResponse({"message":"SUCCESS", "result":result}, status=200)
+            return JsonResponse({"message":"SUCCESS", "result":detail_result}, status=200)
 
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
@@ -87,16 +91,16 @@ class RestaurantReviewView(View):
     @ConfirmUser
     def post(self, request, restaurant_id):
         try:
-            data       = json.loads(request.body)
+            data = json.loads(request.body)
             restaurant = Restaurant.objects.get(id=restaurant_id)
-            content    = data["content"]
-            rating     = data["rating"]
+            content = data["content"]
+            rating = data["rating"]
 
             Review.objects.create(
-                user       = request.user,
+                user = request.user,
                 restaurant = restaurant,
-                content    = content,
-                rating     = rating
+                content = content,
+                rating = rating
             )
 
             return JsonResponse({"message":"SUCCESS"}, status=201)
@@ -115,7 +119,7 @@ class RestaurantReviewView(View):
         limit         = int(request.GET.get("limit", 10))
         rating_min    = request.GET.get("rating-min", 1)
         rating_max    = request.GET.get("rating-max", 5)
-        reviews       = Review.objects.filter(restaurant_id=restaurant_id, rating__gte = rating_min, rating__lte = rating_max).order_by("-created_at")[offset : offset + limit]
+        reviews       = Review.objects.prefetch_related("user").filter(restaurant_id=restaurant_id, rating__gte = rating_min, rating__lte = rating_max).order_by("-created_at")[offset : offset + limit]
         review_list   = [{
             "user":{
                 "id"            : review.user.id,
@@ -134,7 +138,7 @@ class RestaurantReviewView(View):
 class RestaurantFoodsView(View):
     def get(self, request, restaurant_id):
         try:
-            foods      = Food.objects.filter(restaurant_id=restaurant_id)
+            foods      = Food.objects.prefetch_related("images").filter(restaurant_id=restaurant_id)
             foods_list = [{
                 "id"     : food.id, 
                 "name"   : food.name, 
@@ -214,7 +218,6 @@ class ReviewView(View):
 class BannerView(View):
     def get(self, request):
         try:
-            # restaurants :related_name, to_attr : customizedname
             subcategories = SubCategory.objects.prefetch_related(
                 Prefetch("restaurants", queryset=Restaurant.objects.prefetch_related(
                     Prefetch("foods", queryset=Food.objects.prefetch_related(
@@ -223,7 +226,6 @@ class BannerView(View):
                             ), to_attr="all_restaurants")
             )
 
-            # Can't use .first(), but Can use [0]
             subcategory_list = [{
                 "sub_category_id" : subcategory.id,
                 "name" : subcategory.name,
@@ -240,21 +242,25 @@ class RestaurantView(View):
         try:
             ordering = request.GET.get("ordering", None)
             sub_category = int(request.GET.get("sub_category_id", None))
-            reviews = Review.objects.filter(restaurant_id=restaurant_id).order_by("-created_at")
 
             if sub_category:
-                restaurants = Restaurant.objects.filter(sub_category_id=sub_category).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
-            
+                restaurants = Restaurant.objects.prefetch_related(Prefetch("foods", queryset=Food.objects.prefetch_related(
+                    Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")
+                    ), to_attr="all_foods")).filter(sub_category_id=sub_category).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
             else:
-                restaurants = Restaurant.objects.annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
-            
+                restaurants = Restaurant.objects.prefetch_related(Prefetch("foods", queryset=Food.objects.prefetch_related(
+                    Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")
+                    ), to_attr="all_foods")).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
+
             restaurant_list = [{
                 "name" : restaurant.name,
                 "address" : restaurant.address,
-                "image" : restaurant.foods.all()[0].images.all()[0].image_url if restaurant.foods.all()[0].images.all() else None,
+                "image" : restaurant.all_foods[0].all_images[0].image_url,
                 "rating" : round(restaurant.average_rating, 1),
                 "restaurant_id" : restaurant.id
             }for restaurant in restaurants]          
+
+            reviews = Review.objects.prefetch_related("user").filter(restaurant_id=restaurant_id).order_by("-created_at")
 
             review_list   = [{
                 "review_id" : review.user.id,
@@ -277,10 +283,10 @@ class FilteringView(View):
         }
 
         keyword = request.GET.getlist('keyword', None)
-        offset  = int(request.GET.get('offset', 0))
-        limit   = int(request.GET.get('limit', 6))
-        sort    = request.GET.get("sort", "rating_sort")
-        renew  = request.GET.get("renew", None)
+        offset = int(request.GET.get('offset', 0))
+        limit = int(request.GET.get('limit', 6))
+        sort = request.GET.get("sort", "rating_sort")
+        renew = request.GET.get("renew", None)
         
         q = Q()
         if keyword:
@@ -337,5 +343,3 @@ class FilteringView(View):
             "sub_category_result"   :sub_category_result,
             "restaurant_result"     :restaurant_result
             }, status=200)
-
-

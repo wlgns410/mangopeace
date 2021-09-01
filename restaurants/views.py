@@ -1,4 +1,5 @@
 import json
+from django.db import reset_queries
 from django.db.models.query import Prefetch
 from django.http        import JsonResponse
 from django.views       import View
@@ -10,7 +11,11 @@ from restaurants.models import Restaurant, Food, SubCategory, Image
 from users.utils        import ConfirmUser, LooseConfirmUser
 from users.models       import Review
 
+from users.utils     import query_debugger
+
+
 class PopularView(View):
+    @query_debugger
     def get(self, request):
         try:
             dict_sort={
@@ -216,6 +221,7 @@ class ReviewView(View):
             return JsonResponse({"message":"REVIEW_NOT_EXISTS"}, status=404)
             
 class BannerView(View):
+    @query_debugger
     def get(self, request):
         try:
             subcategories = SubCategory.objects.prefetch_related(
@@ -238,6 +244,7 @@ class BannerView(View):
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
 
 class RestaurantView(View):
+    @query_debugger
     def get(self, request, restaurant_id):
         try:
             ordering = request.GET.get("ordering", None)

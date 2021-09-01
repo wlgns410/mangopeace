@@ -1,4 +1,4 @@
-
+import os
 from pathlib import Path
 from my_settings import DATABASES, SECRET_KEY
 
@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     'restaurants',
     'drf_yasg',
     'rest_framework',
-    'django_extensions'
+    'django_extensions',
 ]
 
 MIDDLEWARE = [

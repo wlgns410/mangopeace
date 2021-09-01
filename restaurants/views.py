@@ -243,10 +243,12 @@ class RestaurantView(View):
             ordering = request.GET.get("ordering", None)
             sub_category = int(request.GET.get("sub_category_id", None))
 
+            q_object = Q()
             if sub_category:
+                q_object &= Q(sub_category_id=sub_category)
                 restaurants = Restaurant.objects.prefetch_related(Prefetch("foods", queryset=Food.objects.prefetch_related(
                     Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")
-                    ), to_attr="all_foods")).filter(sub_category_id=sub_category).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
+                    ), to_attr="all_foods")).filter(q_object).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
             else:
                 restaurants = Restaurant.objects.prefetch_related(Prefetch("foods", queryset=Food.objects.prefetch_related(
                     Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")

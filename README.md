@@ -5,7 +5,7 @@
 - 우리의 프로젝트는, 망고플레이트의 기능(맛집 리스트, 검색 필터링, 가고싶다, 리뷰, 평점 등)을 모티브한 프로젝트입니다.
 - 짧은 프로젝트 기간동안 개발에 집중해야 하므로 디자인 및 기능의 기획 부분을 차용했습니다.
 - 개발은 초기 세팅부터 전부 직접 구현했으며, 모두 백앤드와 연결하여 실제 사용할 수 있는 서비스 수준으로 개발한 것입니다.
-- [백엔드 github 링크](https://github.com/wecode-bootcamp-korea/20-2nd-BeerBnB-backend)
+- [백엔드 github 링크](https://github.com/wecode-bootcamp-korea/22-1st-mangoPeace-backend)
 - [프론트엔드 github 링크](https://github.com/wecode-bootcamp-korea/22-1st-mangoPeace-frontend)
 
 ### 개발 인원 및 기간
@@ -34,12 +34,8 @@
 ### 적용 기술
 
 > - Front-End : javascript, React.js framwork, sass, Kakao Map API
-> - Back-End : Python, Django web framework, MySQL, Bcrypt, pyjwt
+> - Back-End : Python, Django, MySQL, Bcrypt, pyjwt
 > - Common : AWS, RESTful API
-
-### 협업 툴
-> - [Notion](https://www.notion.so/072c9c94dcaa424486c3e8b567a234b1)
-> - [Trello](https://trello.com/b/aXkK1j1t/%EC%8B%B8%EC%9A%B0%EC%A7%80%EB%A7%9D%EA%B3%A0-%F0%9F%A5%AD)
 
 ### 구현 기능
 
@@ -51,8 +47,8 @@
 #### 메인페이지
 
 - 검색바에서 키워드 검색시 검색 페이지로 이동.
-- 맛집 리스트 배너. 클릭 시 리스트 페이지로 이동.[**이지훈**]
-- TOP5 식당 배너. 클릭 시 해당 식당의 상세 페이지로 이동.[**이지훈**]
+- 맛집 리스트 배너. 클릭 시 리스트 페이지로 이동.
+- TOP5 식당 배너. 클릭 시 해당 식당의 상세 페이지로 이동.
 - 하단 푸터를 통한 사이트 설명.
 
 #### 검색 페이지
@@ -61,7 +57,7 @@
 - 리뷰순, 평점순, 가격대에 대한 세부 필터링.
 - 페이지네이션.
 
-#### 리스트페이지 [**이지훈**]
+#### 리스트페이지
 
 - 카테고리에 대한 식당 리스트를 평점순으로 나열.
 - 클릭시 상세 페이지로 이동.

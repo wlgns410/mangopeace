@@ -42,7 +42,6 @@ class PopularView(View):
         except Restaurant.DoesNotExist:
             return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
 
-
 class RestaurantDetailView(View):
     @LooseConfirmUser
     def get(self, request, restaurant_id):

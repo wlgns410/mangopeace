@@ -1,4 +1,10 @@
 # 망고 플레이트 Clone Project Backend
+<img width="671" alt="스크린샷 2021-09-02 오후 2 33 53" src="https://user-images.githubusercontent.com/81137234/131787627-f1fcc1ad-6114-4e04-a9bb-499f4ecb1378.png">
+- [유투브 링크](https://youtu.be/micnaXndqY8)
+
+
+
+<br>
 
 ## 프로젝트 소개
 - 망고플레이트란, 사용자 데이터 기반의 식당추천 서비스로 주변 맛집 정보 및 추천 맛집 리스트 등, 종합적인 맛집 발견 경험을 제공하는 사이트입니다.
@@ -30,12 +36,15 @@
 > - Github
 > - Slack
 > - Postman
+> - AqueryTool
+
+<img width="980" alt="스크린샷 2021-09-02 오후 2 36 15" src="https://user-images.githubusercontent.com/81137234/131787831-d4298d41-cd12-49ef-a8eb-81f7d4141b02.png">
 
 ### 적용 기술
 
 > - Front-End : javascript, React.js framwork, sass, Kakao Map API
 > - Back-End : Python, Django, MySQL, Bcrypt, pyjwt
-> - Common : AWS, RESTful API
+> - Common : AWS, RESTful API,AqueryTool
 
 ### 구현 기능
 

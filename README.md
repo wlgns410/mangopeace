@@ -1,8 +1,10 @@
-# 망고 플레이트 Clone Project Backend
+# 망고 플레이트 Project Backend
 <br>
 
 <img width="671" alt="스크린샷 2021-09-02 오후 2 33 53" src="https://user-images.githubusercontent.com/81137234/131787627-f1fcc1ad-6114-4e04-a9bb-499f4ecb1378.png">
 - [유투브 링크](https://youtu.be/micnaXndqY8)
+
+<br>
 
 ## 작성한 엔드포인트
 

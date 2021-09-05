@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'restaurants',
-    'drf_yasg',
+
     'rest_framework',
     'django_extensions',
 ]

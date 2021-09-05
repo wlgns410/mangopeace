@@ -284,6 +284,7 @@ class RestaurantView(View):
 
 
 class FilteringView(View):
+    @query_debugger
     def get(self, request):
         sorted_dict ={
             "rating_sort":"-average_rating",

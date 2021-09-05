@@ -13,7 +13,6 @@ from users.models       import Review
 
 from users.utils     import query_debugger
 
-
 class PopularView(View):
     @query_debugger
     def get(self, request):
@@ -21,12 +20,13 @@ class PopularView(View):
             dict_sort={
                 "average_rating" : "-filtering"
             }
+
             filtering = request.GET.get("filtering", None)
             restaurants = Restaurant.objects.select_related("sub_category", "sub_category__category").prefetch_related(
                 Prefetch("foods", queryset=Food.objects.prefetch_related(
                     Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")
                     ), to_attr="all_foods")).annotate(filtering=Avg("review__rating")).order_by(dict_sort[filtering])
-            
+
             restaurant_list = [{
                     "sub_category" : restaurant.sub_category.name,
                     "category" : restaurant.sub_category.category.name,

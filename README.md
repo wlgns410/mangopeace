@@ -6,22 +6,20 @@
 
 <br>
 
-## [작성한 엔드포인트 API 문서](https://documenter.getpostman.com/view/16450899/U16oq4DE)
+## 작성한 엔드포인트 
+[Postman API 문서](https://documenter.getpostman.com/view/16450899/U16oq4DE)
+
+<img width="1262" alt="스크린샷 2021-09-16 오전 10 46 04" src="https://user-images.githubusercontent.com/81137234/133535989-21bd5286-97c8-4f3b-8828-b1b4fdd2ff84.png">
+
+<br>
 
 - 인기있는 레스토랑 
-
 - 카테고리별 레스토랑 리스트 
-
 - 배너 리스트
-
 - 상세 레스토랑
-
 - 레스토랑 리뷰
-
 - 레스토랑 음식사진
-
 - 리뷰별, 평점별 필터링
-
 
 <br>
 

@@ -6,121 +6,21 @@
 
 <br>
 
-## 작성한 엔드포인트
+## [작성한 엔드포인트 API 문서](https://documenter.getpostman.com/view/16450899/U16oq4DE)
 
 - 인기있는 레스토랑 
-```
-class PopularView(View):
-    @query_debugger
-    def get(self, request):
-        try:
-            dict_sort={
-                "average_rating" : "-filtering"
-            }
-            filtering = request.GET.get("filtering", None)
-            restaurants = Restaurant.objects.select_related("sub_category", "sub_category__category").prefetch_related(
-                Prefetch("foods", queryset=Food.objects.prefetch_related(
-                    Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")
-                    ), to_attr="all_foods")).annotate(filtering=Avg("review__rating")).order_by(dict_sort[filtering])
-            
-            restaurant_list = [{
-                    "sub_category" : restaurant.sub_category.name,
-                    "category" : restaurant.sub_category.category.name,
-                    "restaurant_name" : restaurant.name,
-                    "address" : restaurant.address,
-                    "rating" : round(restaurant.filtering, 1),
-                    "image" : restaurant.all_foods[0].all_images[0].image_url,
-                    "restaurant_id" : restaurant.id
-            }for restaurant in restaurants]
-
-            return JsonResponse({"message":"SUCCESS", "result":restaurant_list[:5]}, status=200)
-
-        except Restaurant.DoesNotExist:
-            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
-```
-
-<img width="606" alt="스크린샷 2021-09-02 오후 3 37 15" src="https://user-images.githubusercontent.com/81137234/131794635-c75840d9-efb6-4f01-8db2-3c93b08fe343.png">
-<img width="632" alt="스크린샷 2021-09-02 오후 3 37 27" src="https://user-images.githubusercontent.com/81137234/131794648-a2d655b0-1dd2-4737-94a4-5209f29cdf3c.png">
-
-<br>
 
 - 카테고리별 레스토랑 리스트 
 
-```
-class RestaurantView(View):
-    @query_debugger
-    def get(self, request, restaurant_id):
-        try:
-            ordering = request.GET.get("ordering", None)
-            sub_category = int(request.GET.get("sub_category_id", None))
-
-            q_object = Q()
-            if sub_category:
-                q_object &= Q(sub_category_id=sub_category)
-                restaurants = Restaurant.objects.prefetch_related(Prefetch("foods", queryset=Food.objects.prefetch_related(
-                    Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")
-                    ), to_attr="all_foods")).filter(q_object).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
-            else:
-                restaurants = Restaurant.objects.prefetch_related(Prefetch("foods", queryset=Food.objects.prefetch_related(
-                    Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")
-                    ), to_attr="all_foods")).annotate(average_rating=Avg("review__rating")).order_by("-"+ordering)
-
-            restaurant_list = [{
-                "name" : restaurant.name,
-                "address" : restaurant.address,
-                "image" : restaurant.all_foods[0].all_images[0].image_url,
-                "rating" : round(restaurant.average_rating, 1),
-                "restaurant_id" : restaurant.id
-            }for restaurant in restaurants]          
-
-            reviews = Review.objects.prefetch_related("user").filter(restaurant_id=restaurant_id).order_by("-created_at")
-
-            review_list   = [{
-                "review_id" : review.user.id,
-                "content" : review.content,
-                "profile_url" : review.user.profile_url if review.user else None,
-                "nickname" : review.user.nickname
-            }for review in reviews]
-            
-            return JsonResponse({"message":"success", "restaurant_list":restaurant_list[:5], "review_list" : review_list}, status=200)
-
-        except Restaurant.DoesNotExist:
-            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
-```
-
-<img width="606" alt="스크린샷 2021-09-02 오후 3 43 01" src="https://user-images.githubusercontent.com/81137234/131795327-7431e578-6182-4f87-9a2c-cc4c37773ad5.png">
-<img width="682" alt="스크린샷 2021-09-02 오후 3 43 11" src="https://user-images.githubusercontent.com/81137234/131795337-30db12cf-6826-4b96-9d17-86ea30e3d961.png">
-
-<br> 
-
 - 배너 리스트
 
-```
-class BannerView(View):
-    @query_debugger
-    def get(self, request):
-        try:
-            subcategories = SubCategory.objects.prefetch_related(
-                Prefetch("restaurants", queryset=Restaurant.objects.prefetch_related(
-                    Prefetch("foods", queryset=Food.objects.prefetch_related(
-                            Prefetch("images", queryset=Image.objects.all(), to_attr="all_images")
-                            ), to_attr="all_foods")
-                            ), to_attr="all_restaurants")
-            )
+- 상세 레스토랑
 
-            subcategory_list = [{
-                "sub_category_id" : subcategory.id,
-                "name" : subcategory.name,
-                "image" : subcategory.all_restaurants[0].all_foods[0].all_images[0].image_url,
-            }for subcategory in subcategories]
+- 레스토랑 리뷰
 
-            return JsonResponse({"message":"success", "result":subcategory_list}, status=200)
+- 레스토랑 음식사진
 
-        except Restaurant.DoesNotExist:
-            return JsonResponse({"message":"RESTAURANT_NOT_EXIST"}, status=404)
-```
-<img width="606" alt="스크린샷 2021-09-02 오후 3 43 52" src="https://user-images.githubusercontent.com/81137234/131795544-70027999-de95-41bb-aa38-4a39032ea4e4.png">
-<img width="671" alt="스크린샷 2021-09-02 오후 3 44 01" src="https://user-images.githubusercontent.com/81137234/131795552-4a73aa58-f34f-4561-b86d-5d23b8f7a1ee.png">
+- 리뷰별, 평점별 필터링
 
 
 <br>
